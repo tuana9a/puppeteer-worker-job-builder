@@ -37,15 +37,24 @@ export class InvalidJobError extends JobBuilderError {
 
 }
 
+export class ActionLog {
+  action: Action;
+  output: any;
+  error: any;
+  at: number;
+}
+
 export class ActionPayload {
   params: any;
   libs: any;
   ctx: any;
   page: any;
-  outputs: any[];
+  logs: ActionLog[];
   currentIdx: number;
+  actions: Action[];
+  stacks: Action[];
+  isBreak: Function;
   constructor(obj: ActionPayload);
-  static from(obj: ActionPayload): ActionPayload;
 };
 
 type ActionPayloadHandler = (_payload: ActionPayload) => Promise<any>;
@@ -55,7 +64,7 @@ export class Action {
 
   static BREAK_POINT_TYPE = "breakPoint";
 
-  static REPEAT_TYPE = "repeat";
+  static IF_TYPE = "if";
 
   static DEFAULT_MAX_TIMES = 15;
 
@@ -65,7 +74,7 @@ export class Action {
   type: string;
   __isMeAction: boolean;
 
-  constructor(name: string, handler: ActionPayloadHandler, type = Action.DEFAULT_TYPE);
+  constructor(type = Action.DEFAULT_TYPE);
 
   static isValidAction(action: Action): boolean;
 
@@ -73,16 +82,28 @@ export class Action {
 
   isBreakPoint(): boolean;
 
-  isRepeat(): boolean;
+  isIf(): boolean;
 
   withPayload(payload: ActionPayload): Action;
+
+  withName(name: string): Action;
+
+  withHandler(handler: ActionPayloadHandler): Action;
 
   async run(): Promise<any>;
 };
 
 export class BreakPointAction extends Action {
-  doWhenBreak?: Function | Action | Action[];
-  constructor(name: string, handler: Function, doWhenBreak?: Function | Action | Action[]);
+  constructor();
+}
+
+export class IfAction extends Action {
+  _if: Action;
+  _then: Action[];
+  _else: Action[];
+  constructor();
+  Then(actions: Action[]): IfAction;
+  Else(actions: Action[]): IfAction;
 }
 
 export class Job {
@@ -113,7 +134,7 @@ export function WaitForTimeout(timeout: number): Action;
 
 export function BringToFront(): Action;
 
-export function ScreenShot(selector?: string, output?: string = "./tmp/temp.png", type?: ImageType = "png"): Action;
+export function ScreenShot(selector?: string, saveTo?: string = "./tmp/temp.png", type?: ImageType = "png"): Action;
 
 export function WaitForNavigation(waitUntil: PuppeteerLifeCycleEvent): Action;
 
@@ -127,18 +148,12 @@ export function GetTextContent(selector: string): Action;
 
 export function TypeIn(selector: string, getter: string | Action): Action;
 
-export function BreakPoint(action: Action, handler: Function, doWhenBreak?: Function | Action | Action[]): Action;
+export function BreakPoint(): BreakPointAction;
 
-export function BreakPointBaseOnPreviousOutput(handler: Function): Action;
-
-export interface RepeatOpts {
-  maxTimes?: number;
-  breakAny?: boolean;
-}
-
-/**
- * @deprecated
- */
-export function RepeatUntil(actions: Action[], handler?: Function, opts?: RepeatOpts): Action;
+export function If(action: Action): IfAction;
 
 export function PageEval(handler?: Function): Action;
+
+export function IsEqual(getter: Function | Action, value: any): Action;
+
+export function IsStrictEqual(getter: Function | Action, value: any): Action;
