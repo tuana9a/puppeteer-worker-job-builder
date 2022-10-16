@@ -1,12 +1,27 @@
-const { Action, ActionPayload, BreakPointAction, IfAction, ActionLog } = require("./core");
-const { InvalidBreakPointError, InvalidJobError, JobBuilderError, NotActionError, NotAnArrayOfActionsError, NotHaveAtLeastOneBreakPointInRepeatUntilError, NotInSupportedValuesError, RequiredParamError } = require("./errors");
-const Job = require("./job");
+import Action from "./actions/Action";
+import BreakPointAction from "./actions/BreakPointAction";
+import ForAction from "./actions/ForAction";
+import IfAction from "./actions/IfAction";
+import NotInSupportedValuesError from "./errors/NotInSupportedValuesError";
+import RequiredParamError from "./errors/RequiredParamError";
+import { PuppeteerLifeCycleEvent, ActionPayloadHandler } from "./types";
 
-/**
- * @param {string} selector
- * @returns {Action}
- */
-function Click(selector, opts = { clickCount: 1 }) {
+export * from "./utils";
+export { default as ActionLog } from "./actions/ActionLog";
+export { default as ActionPayload } from "./actions/ActionPayload";
+export { default as Job } from "./Job";
+export { default as Action } from "./actions/Action";
+export { default as BreakPointAction } from "./actions/BreakPointAction";
+export { default as ForAction } from "./actions/ForAction";
+export { default as IfAction } from "./actions/IfAction";
+export { default as NotInSupportedValuesError } from "./errors/NotInSupportedValuesError";
+export { default as RequiredParamError } from "./errors/RequiredParamError";
+export { default as InvalidJobError } from "./errors/InvalidJobError";
+export { default as JobBuilderError } from "./errors/JobBuilderError";
+export { default as NotAnActionError } from "./errors/NotAnActionError";
+export { default as NotAnArrayOfActionsError } from "./errors/NotAnArrayOfActionError";
+
+export function Click(selector: string, opts = { clickCount: 1 }): Action {
   if (!selector) throw new RequiredParamError("selector").withBuilderName(Click.name);
   return new Action().withName(`${Click.name}: ${selector}`).withHandler(async (payload) => {
     const { page } = payload;
@@ -14,12 +29,7 @@ function Click(selector, opts = { clickCount: 1 }) {
   });
 }
 
-/**
- *
- * @param {string} url
- * @returns {Action}
- */
-function GoTo(url) {
+export function GoTo(url: string): Action {
   if (!url) throw new RequiredParamError("url").withBuilderName(GoTo.name);
   return new Action().withName(`${GoTo.name}: ${url}`).withHandler(async (payload) => {
     const { page } = payload;
@@ -27,11 +37,7 @@ function GoTo(url) {
   });
 }
 
-/**
- *
- * @returns {Action}
- */
-function CurrentUrl() {
+export function CurrentUrl(): Action {
   return new Action().withName(`${CurrentUrl.name}`).withHandler((payload) => {
     const { page } = payload;
     const output = page.url();
@@ -39,31 +45,18 @@ function CurrentUrl() {
   });
 }
 
-/**
- *
- * @returns {Action}
- */
-function Reload() {
+export function Reload(): Action {
   return new Action().withName(Reload.name).withHandler(async (payload) => {
     const { page } = payload;
     await page.reload();
   });
 }
 
-/**
- *
- * @returns {Action}
- */
-function F5() {
+export function F5(): Action {
   return Reload();
 }
 
-/**
- *
- * @param {number} timeout
- * @returns {Action}
- */
-function WaitForTimeout(timeout) {
+export function WaitForTimeout(timeout: number): Action {
   if (!timeout) throw new RequiredParamError("timeout").withBuilderName(WaitForTimeout.name);
   return new Action().withName(`${WaitForTimeout.name}: ${timeout}`).withHandler(async (payload) => {
     const { page } = payload;
@@ -71,50 +64,35 @@ function WaitForTimeout(timeout) {
   });
 }
 
-/**
- * @returns {Action}
- */
-function BringToFront() {
+export function BringToFront(): Action {
   return new Action().withName(`${BringToFront.name}`).withHandler(async (payload) => {
     const { page } = payload;
     await page.bringToFront();
   });
 }
 
-/**
- * @param {string} selector
- * @returns {Action}
- */
-function ScreenShot(selector, saveTo = "./tmp/temp.png", type = "png") {
+export function ScreenShot(selector: string, saveTo: string = "./tmp/temp.png", type: string = "png"): Action {
   return new Action().withName(`${ScreenShot.name}: ${selector}`).withHandler(async (payload) => {
     const { page } = payload;
-    const _output = { saveTo: saveTo, type: type };
+    const output = { saveTo: saveTo, type: type };
     if (!selector) {
       await page.screenshot({ path: saveTo, type: type });
-      return _output;
+      return output;
     }
     const element = await page.$(selector);
     await element.screenshot({ path: saveTo, type: type });
-    return _output;
+    return output;
   });
 }
 
-/**
- * @param {string} waitUntil
- * @returns {Action}
- */
-function WaitForNavigation(waitUntil = "networkidle0") {
+export function WaitForNavigation(waitUntil: PuppeteerLifeCycleEvent = "networkidle0"): Action {
   return new Action().withName(`${ScreenShot.name}: ${waitUntil}`).withHandler(async (payload) => {
     const { page } = payload;
     await page.waitForNavigation({ waitUntil: waitUntil });
   });
 }
 
-/**
- * @param {Function} getter (params) => { your code }
- * @returns {Action}
- */
-function GetValueFromParams(getter) {
+export function GetValueFromParams(getter: Function) {
   if (!getter) throw new RequiredParamError("getter").withBuilderName(GetValueFromParams.name);
   return new Action().withName(`${GetValueFromParams.name}: ${getter.name}`).withHandler((payload) => {
     const { params } = payload;
@@ -127,15 +105,13 @@ function GetValueFromParams(getter) {
  * Ex: GetActionOutput(0)
  * Ex: GetActionOutput("prev")
  * Ex: GetActionOutput((outputs) => { your code })
- * @param {Number | string | Function} getter
- * @returns {Action}
  */
-function GetActionOutput(getter) {
+export function GetActionOutput(getter: Number | String | Function): Action {
   if (!getter) throw new RequiredParamError("getter").withBuilderName(GetValueFromParams.name);
 
   // not "not a number" so it's a number
   if (!Number.isNaN(getter)) {
-    const idx = parseInt(getter);
+    const idx = parseInt(getter as string);
     return new Action().withName(`${GetActionOutput.name}: ${idx}`).withHandler((payload) => {
       const { logs } = payload;
       const { output } = logs[idx];
@@ -162,31 +138,24 @@ function GetActionOutput(getter) {
   }
 
   // default action
-  return new Action().withName(`${GetActionOutput.name}: ${getter.name}`).withHandler(async (payload) => {
+  return new Action().withName(`${GetActionOutput.name}: ${(getter as Function).name}`).withHandler(async (payload) => {
     const { logs } = payload;
     const outputs = logs.map((x) => x.output);
-    const output = await getter(outputs);
+    const output = await (getter as Function)(outputs);
     return output;
   });
 }
 
-/**
- * @returns {Action}
- */
-function GetOutputFromPreviousAction() {
+export function GetOutputFromPreviousAction(): Action {
   return GetActionOutput("prev");
 }
 
-/**
- * @param {string} selector
- * @returns {Action}
- */
-function GetTextContent(selector) {
+export function GetTextContent(selector: string): Action {
   if (!selector) throw new RequiredParamError("selector").withBuilderName(GetValueFromParams.name);
 
   return new Action().withName(`${GetTextContent.name}: ${selector}`).withHandler(async (payload) => {
     const { page } = payload;
-    const output = page.$eval(selector, (e) => e.textContent);
+    const output = page.$eval(selector, (e: Element) => e.textContent);
     return output;
   });
 }
@@ -194,17 +163,15 @@ function GetTextContent(selector) {
 /**
  * Ex: TypeIn("#input-username", "123412341234")
  * Ex: TypeIn("#input-password", GetTextContent("#hidden-password"))
- * @param {string} selector
- * @param {string | Action} getter
- * @returns {Action}
  */
-function TypeIn(selector, getter) {
+export function TypeIn(selector: string, getter: string | Action): Action {
   if (!selector) throw new RequiredParamError("selector").withBuilderName(TypeIn.name);
   if (!getter) throw new RequiredParamError("getter").withBuilderName(TypeIn.name);
 
-  if (getter.__isMeAction) {
-    return new Action().withName(`${TypeIn.name}: ${selector} by ${getter.name}`).withHandler(async (payload) => {
-      const valueToType = await getter.withPayload(payload).run();
+  if ((getter as Action).__isMeAction) {
+    const action = getter as Action;
+    return new Action().withName(`${TypeIn.name}: ${selector} ${action.name}`).withHandler(async (payload) => {
+      const valueToType = await action.withPayload(payload).run();
       const { page } = payload;
       await page.type(selector, valueToType);
       return valueToType;
@@ -212,39 +179,30 @@ function TypeIn(selector, getter) {
   }
 
   const valueToType = String(getter); // default string input
-  return new Action().withName(`${TypeIn.name}: ${valueToType}`).withHandler(async (payload) => {
+  return new Action().withName(`${TypeIn.name}: ${selector} ${valueToType}`).withHandler(async (payload) => {
     const { page } = payload;
     await page.type(selector, valueToType);
   });
 }
 
-/**
- *
- * @returns {BreakPointAction}
- */
-function BreakPoint() {
+export function BreakPoint(): BreakPointAction {
   return new BreakPointAction().withName(BreakPoint.name);
 }
 
-/**
- * @param {Action} action
- * @returns {IfAction}
- */
-function If(action) {
+export function If(action: Action): IfAction {
   return new IfAction(action).withName(If.name);
 }
 
-/**
- *
- * @param {Function | Action} getter
- * @param {*} value
- */
-function IsEqual(getter, value) {
+export function For(action: any[] | Function | Action): ForAction {
+  return new ForAction(action).withName(For.name);
+}
+
+export function IsEqual(getter: ActionPayloadHandler | Action, value: any): Action {
   if (!getter) throw new RequiredParamError("getter").withBuilderName(IsEqual.name);
-  if (getter.__isMeAction) {
-    Action.throwIfNotValidAction(getter);
-    return new Action().withName(`${IsEqual.name}: ${getter.name} == ${value}`).withHandler(async (payload) => {
-      const gotValue = await getter.withPayload(payload).run();
+  const getterAction = getter as Action;
+  if (getterAction.__isMeAction) {
+    return new Action().withName(`${IsEqual.name}: ${getterAction.name} == ${value}`).withHandler(async (payload) => {
+      const gotValue = await getterAction.withPayload(payload).run();
       // eslint-disable-next-line eqeqeq
       if (gotValue == value) {
         return true;
@@ -253,8 +211,9 @@ function IsEqual(getter, value) {
     });
   }
 
+  const geterFunction: ActionPayloadHandler = getter as ActionPayloadHandler;
   return new Action().withName(IsEqual.name).withHandler(async (payload) => {
-    const gotValue = await getter(payload);
+    const gotValue = await geterFunction(payload);
     // eslint-disable-next-line eqeqeq
     if (gotValue == value) {
       return true;
@@ -263,17 +222,12 @@ function IsEqual(getter, value) {
   });
 }
 
-/**
- *
- * @param {Function | Action} getter
- * @param {*} value
- */
-function IsStrictEqual(getter, value) {
+export function IsStrictEqual(getter: ActionPayloadHandler | Action, value: any): Action {
   if (!getter) throw new RequiredParamError("getter").withBuilderName(IsEqual.name);
-  if (getter.__isMeAction) {
-    Action.throwIfNotValidAction(getter);
-    return new Action().withName(`${IsEqual.name}: ${getter.name} == ${value}`).withHandler(async (payload) => {
-      const gotValue = await getter.withPayload(payload).run();
+  const getterAction = getter as Action;
+  if (getterAction.__isMeAction) {
+    return new Action().withName(`${IsEqual.name}: ${getterAction.name} == ${value}`).withHandler(async (payload) => {
+      const gotValue = await getterAction.withPayload(payload).run();
       // eslint-disable-next-line eqeqeq
       if (gotValue == value) {
         return true;
@@ -282,8 +236,9 @@ function IsStrictEqual(getter, value) {
     });
   }
 
+  const geterFunction: ActionPayloadHandler = getter as ActionPayloadHandler;
   return new Action().withName(IsEqual.name).withHandler(async (payload) => {
-    const gotValue = await getter(payload);
+    const gotValue = await geterFunction(payload);
     // eslint-disable-next-line eqeqeq
     if (gotValue == value) {
       return true;
@@ -292,12 +247,7 @@ function IsStrictEqual(getter, value) {
   });
 }
 
-/**
- *
- * @param {Function} handler
- * @returns {Action}
- */
-function PageEval(handler) {
+export function PageEval(handler: ActionPayloadHandler): Action {
   if (!handler) throw new RequiredParamError("handler").withBuilderName(PageEval.name);
 
   return new Action().withName(`${PageEval.name}: ${handler.name}`).withHandler(async (payload) => {
@@ -306,39 +256,3 @@ function PageEval(handler) {
     return output;
   });
 }
-
-module.exports = {
-  JobBuilderError,
-  RequiredParamError,
-  NotActionError,
-  NotInSupportedValuesError,
-  NotAnArrayOfActionsError,
-  NotHaveAtLeastOneBreakPointInRepeatUntilError,
-  InvalidJobError,
-  InvalidBreakPointError,
-  Action,
-  ActionLog,
-  BreakPointAction,
-  IfAction,
-  ActionPayload,
-  Job,
-  Click,
-  GoTo,
-  CurrentUrl,
-  Reload,
-  F5,
-  WaitForTimeout,
-  WaitForNavigation,
-  BringToFront,
-  ScreenShot,
-  GetValueFromParams,
-  GetActionOutput,
-  GetOutputFromPreviousAction,
-  GetTextContent,
-  TypeIn,
-  BreakPoint,
-  If,
-  PageEval,
-  IsEqual,
-  IsStrictEqual,
-};

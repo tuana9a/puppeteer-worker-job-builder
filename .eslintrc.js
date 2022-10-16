@@ -23,6 +23,6 @@ module.exports = {
     "operator-linebreak": "warn",
     "no-underscore-dangle": "off",
     "no-unused-vars": "warn",
-    "max-classes-per-file": "off",
+    // "max-classes-per-file": "off",
   },
 };

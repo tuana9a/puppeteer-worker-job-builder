@@ -2,28 +2,42 @@ type PuppeteerLifeCycleEvent = "load" | "domcontentloaded" | "networkidle0" | "n
 
 type ImageType = "png" | "jpeg";
 
+type ActionPayloadHandler = (payload: ActionPayload) => Promise<any>;
+
+type ActionDefaultType = "DEFAULT"
+
+type ActionType = "DEFAULT" | "BREAK_POINT" | "IF";
+
+type DefaultScreenshotSaveTo = "./tmp/temp.png";
+
+type DefaultScreenshotType = "png";
+
+export function isValidAction(action: Action): boolean;
+
+export function isValidJob(job: Job): boolean;
+
 export class JobBuilderError extends Error {
   builderName: string;
   withBuilderName(builderName: string): JobBuilderError;
-};
+}
 
 export class RequiredParamError extends JobBuilderError {
   paramName: string;
-};
+}
 
 export class NotActionError extends JobBuilderError {
   ilegalValue: any;
-};
+}
 
 export class NotInSupportedValuesError extends JobBuilderError {
   constructor(supportValues: [], input: any)
   supportedValues: [];
   input: any;
-};
+}
 
 export class NotAnArrayOfActionsError extends JobBuilderError {
   ilegalValue: any;
-};
+}
 
 export class NotHaveAtLeastOneBreakPointInRepeatUntilError extends JobBuilderError {
   actions: Action[];
@@ -55,34 +69,16 @@ export class ActionPayload {
   stacks: Action[];
   isBreak: Function;
   constructor(obj: ActionPayload);
-};
-
-type ActionPayloadHandler = (_payload: ActionPayload) => Promise<any>;
+}
 
 export class Action {
-  static DEFAULT_TYPE = "default";
-
-  static BREAK_POINT_TYPE = "breakPoint";
-
-  static IF_TYPE = "if";
-
-  static DEFAULT_MAX_TIMES = 15;
-
   name: string;
   handler: ActionPayloadHandler;
   payload: ActionPayload;
   type: string;
   __isMeAction: boolean;
 
-  constructor(type = Action.DEFAULT_TYPE);
-
-  static isValidAction(action: Action): boolean;
-
-  static throwIfNotAnArrayOfActions(actions: Action[], builderName: string): void;
-
-  isBreakPoint(): boolean;
-
-  isIf(): boolean;
+  constructor(type?: ActionType | ActionDefaultType);
 
   withPayload(payload: ActionPayload): Action;
 
@@ -90,8 +86,8 @@ export class Action {
 
   withHandler(handler: ActionPayloadHandler): Action;
 
-  async run(): Promise<any>;
-};
+  run(): Promise<any>;
+}
 
 export class BreakPointAction extends Action {
   constructor();
@@ -110,14 +106,12 @@ export class Job {
   name: string;
   actions: Action[];
   constructor(obj: Job);
-  static isValidJob(job: Job): boolean;
-};
+}
 
-export interface RunPayload {
-  job: Job,
-  page: any,
-  libs: any,
-  params: any,
+export class ForAction extends Action {
+  _generator: any[] | Function | Action;
+  _each: Function[] | Action[];
+  Each(actions: Function[] | Action[]): ForAction;
 }
 
 export function Click(selector: string, opts?: { clickCount?: number; }): Action;
@@ -134,7 +128,7 @@ export function WaitForTimeout(timeout: number): Action;
 
 export function BringToFront(): Action;
 
-export function ScreenShot(selector?: string, saveTo?: string = "./tmp/temp.png", type?: ImageType = "png"): Action;
+export function ScreenShot(selector?: string, saveTo?: string | DefaultScreenshotSaveTo, type?: ImageType | DefaultScreenshotSaveTo): Action;
 
 export function WaitForNavigation(waitUntil: PuppeteerLifeCycleEvent): Action;
 
@@ -151,6 +145,8 @@ export function TypeIn(selector: string, getter: string | Action): Action;
 export function BreakPoint(): BreakPointAction;
 
 export function If(action: Action): IfAction;
+
+export function For(action: any[] | Function | Action): ForAction;
 
 export function PageEval(handler?: Function): Action;
 
