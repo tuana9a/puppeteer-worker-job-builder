@@ -1,6 +1,6 @@
 {
   "name": "puppeteer-worker-job-builder",
-  "version": "1.2.0-a.2",
+  "version": "1.2.0-a.3",
   "description": "puppeteer-worker job builder",
   "author": "Tuan Nguyen Minh",
   "license": "GPL-3.0",
