@@ -1,7 +1,10 @@
 export default class ActionLog {
   public action: string;
+
   public output: any;
+
   public error: any;
+
   public at: number;
 
   constructor({ action, output, error, at }: { action: string; output: any, error?: any, at?: number }) {

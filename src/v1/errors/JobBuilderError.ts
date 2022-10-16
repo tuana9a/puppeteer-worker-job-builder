@@ -1,5 +1,5 @@
 export default class JobBuilderError extends Error {
-  builderName: any;
+  builderName: string;
 
   withBuilderName(builderName: string) {
     this.builderName = builderName;

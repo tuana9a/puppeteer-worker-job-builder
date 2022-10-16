@@ -1,16 +1,16 @@
-import { CreateActionFunction } from "../types";
+import { ArrayGeneratorFunction, CreateActionFunction } from "../types";
 import Action from "./Action";
 
 export default class ForAction extends Action {
-  private _generator: any[] | Function | Action;
+  private _generator: any[] | ArrayGeneratorFunction | Action;
+
   private _each: CreateActionFunction[] | Action[];
 
-  constructor(generator: any[] | Function | Action) {
+  constructor(generator: any[] | ArrayGeneratorFunction | Action) {
     super(ForAction.name);
     this._generator = generator;
     this._each = []; // IMPORTANT
   }
-
 
   Each(actions: CreateActionFunction[] | Action[]) {
     // _each can be function or action mixed so can not check it
@@ -22,7 +22,7 @@ export default class ForAction extends Action {
     const payload = this.getPayload();
     let iterators: any[] = [];
     const action = this._generator as Action;
-    const funktion = this._generator as Function;
+    const funktion = this._generator as ArrayGeneratorFunction;
     const arrayOfValues = this._generator as any[];
     if (action.__isMeAction) {
       iterators = await action.withPayload(payload).run();

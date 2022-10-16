@@ -2,6 +2,7 @@ import Action from "./actions/Action";
 
 export default class Job {
   public name: string;
+
   public actions: Action[];
 
   constructor({ name, actions }) {
@@ -9,4 +10,3 @@ export default class Job {
     this.actions = actions;
   }
 }
-

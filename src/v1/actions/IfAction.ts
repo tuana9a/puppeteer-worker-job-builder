@@ -4,7 +4,9 @@ import NotAnArrayOfActionsError from "../errors/NotAnArrayOfActionError";
 
 export default class IfAction extends Action {
   private _if: Action;
+
   private _then: Action[];
+
   private _else: Action[];
 
   constructor(action: Action) {

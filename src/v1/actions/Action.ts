@@ -4,9 +4,13 @@ import ActionLog from "./ActionLog";
 
 export default class Action {
   public __isMeAction: boolean;
+
   public type: string;
+
   public name: string;
+
   public handler: ActionPayloadHandler;
+
   public payload: ActionPayload;
 
   constructor(type = Action.name) {
