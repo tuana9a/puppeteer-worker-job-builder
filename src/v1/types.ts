@@ -11,7 +11,7 @@ export type CreateActionFunction = (...params: any[]) => Promise<Action>;
 
 export type PuppeteerLifeCycleEvent = "load" | "domcontentloaded" | "networkidle0" | "networkidle2";
 
-export type ArrayGeneratorFunction = (...params: any[]) => any[];
+export type ArrayGeneratorFunction = (...params: any[]) => Promise<any[]>;
 
 export type GetValueFromParamsFunction = (params: any) => any;
 

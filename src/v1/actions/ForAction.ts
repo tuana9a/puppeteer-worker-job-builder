@@ -32,6 +32,7 @@ export default class ForAction extends Action {
       iterators = await funktion(payload);
     }
     const eachs: CreateActionFunction[] | Action[] = Array.from((this._each as any[])).reverse();
+    iterators = Array.from(iterators).reverse();
     for (const iterate of iterators) {
       for (const each of eachs) {
         const eachAction = each as Action;

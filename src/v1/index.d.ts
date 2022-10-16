@@ -20,7 +20,7 @@ type DefaultScreenshotSaveTo = "./tmp/temp.png";
 
 type DefaultScreenshotType = "png";
 
-type ArrayGeneratorFunction = (...params: any[]) => any[];
+type ArrayGeneratorFunction = (...params: any[]) => Promise<any[]>;
 
 type GetValueFromParamsFunction = (params: any) => any;
 
@@ -145,7 +145,7 @@ export class Job {
 export class ForAction extends Action {
   _generator: any[] | ArrayGeneratorFunction | Action;
 
-  _each: Create[] | Action[];
+  _each: CreateActionFunction[] | Action[];
 
   Each(actions: CreateActionFunction[] | Action[]): ForAction;
 }
@@ -184,8 +184,8 @@ export function If(action: Action): IfAction;
 
 export function For(action: any[] | ArrayGeneratorFunction | Action): ForAction;
 
-export function PageEval(handler?: Funktion): Action;
+export function PageEval(handler?: Funktsion): Action;
 
-export function IsEqual(getter: Funktion | Action, value: any): Action;
+export function IsEqual(getter: Funktsion | Action, value: any): Action;
 
-export function IsStrictEqual(getter: Funktion | Action, value: any): Action;
+export function IsStrictEqual(getter: Funktsion | Action, value: any): Action;
