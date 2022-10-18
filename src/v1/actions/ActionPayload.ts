@@ -3,21 +3,21 @@ import ActionLog from "./ActionLog";
 import { IsBreakFunction } from "../types";
 
 export default class ActionPayload {
-  public params: any;
+  params: any;
 
-  public libs: any;
+  libs: any;
 
-  public page: any;
+  page: any;
 
-  public logs: ActionLog[];
+  logs: ActionLog[];
 
-  public currentIdx: number;
+  currentIdx: number;
 
-  public actions: Action[];
+  actions: Action[];
 
-  public stacks: Action[];
+  stacks: Action[];
 
-  public isBreak: IsBreakFunction;
+  isBreak: IsBreakFunction;
 
   constructor({ params, libs, page, logs, currentIdx, actions, stacks, isBreak }) {
     this.params = params;

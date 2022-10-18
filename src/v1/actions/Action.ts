@@ -3,15 +3,15 @@ import { ActionPayloadHandler } from "../types";
 import ActionLog from "./ActionLog";
 
 export default class Action {
-  public __isMeAction: boolean;
+  __isMeAction: boolean;
 
-  public type: string;
+  type: string;
 
-  public name: string;
+  name: string;
 
-  public handler: ActionPayloadHandler;
+  handler: ActionPayloadHandler;
 
-  public payload: ActionPayload;
+  payload: ActionPayload;
 
   constructor(type = Action.name) {
     this.__isMeAction = true;

@@ -1,9 +1,9 @@
 import Action from "./actions/Action";
 
 export default class Job {
-  public name: string;
+  name: string;
 
-  public actions: Action[];
+  actions: Action[];
 
   constructor({ name, actions }) {
     this.name = name;

@@ -2,9 +2,9 @@ import JobBuilderError from "./JobBuilderError";
 
 // TODO: input and supported values in opts constructor
 export default class NotInSupportedValuesError extends JobBuilderError {
-  public input: any;
+  input: any;
 
-  public supportedValues: any[];
+  supportedValues: any[];
 
   constructor(supportedValues: any[], input: any) {
     super(`${input} not in ${supportedValues}`);
