@@ -7,7 +7,7 @@ export default class ActionLog {
 
   at: number;
 
-  constructor({ action, output, error, at }: { action: string; output: any, error?: any, at?: number }) {
+  constructor({ action, output, error, at }: { action: string; output?: any, error?: any, at?: number }) {
     this.action = action;
     this.output = output;
     this.error = error;

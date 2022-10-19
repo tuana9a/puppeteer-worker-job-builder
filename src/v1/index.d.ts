@@ -2,23 +2,17 @@
 /* eslint-disable no-use-before-define */
 /* eslint-disable max-classes-per-file */
 
-type PuppeteerLifeCycleEvent = "load" | "domcontentloaded" | "networkidle0" | "networkidle2";
+interface ClickOpts { clickCount?: number; }
 
-type ImageType = "png" | "jpeg";
+interface GetActionOutputOpts { fromCurrent?: number; direct?: number }
 
-type ActionPayloadHandler = (payload: ActionPayload) => Promise<any>;
+interface JobConstructor { name: string; params: any; page: any; libs: any; actions: Action[]; }
 
 type IsBreakFunction = (...params: any[]) => boolean;
 
 type CreateActionFunction = (...params: any[]) => Promise<Action>;
 
-type ActionDefaultType = "DEFAULT"
-
-type ActionType = "DEFAULT" | "BREAK_POINT" | "IF";
-
-type DefaultScreenshotSaveTo = "./tmp/temp.png";
-
-type DefaultScreenshotType = "png";
+type PuppeteerLifeCycleEvent = "load" | "domcontentloaded" | "networkidle0" | "networkidle2";
 
 type ArrayGeneratorFunction = (...params: any[]) => Promise<any[]>;
 
@@ -26,43 +20,9 @@ type GetValueFromParamsFunction = (params: any) => any;
 
 type GetValueFromOutputsFunction = (outputs: any[]) => any;
 
-type Funktsion = (params: any) => any;
+type ImageType = "png"
 
-export function isValidAction(action: Action): boolean;
-
-export function isValidJob(job: Job): boolean;
-
-export class JobBuilderError extends Error {
-  builderName: string;
-
-  withBuilderName(builderName: string): JobBuilderError;
-}
-
-export class RequiredParamError extends JobBuilderError {
-  paramName: string;
-}
-
-export class NotActionError extends JobBuilderError {
-  ilegalValue: any;
-}
-
-export class NotInSupportedValuesError extends JobBuilderError {
-  constructor(supportValues: [], input: any)
-
-  supportedValues: [];
-
-  input: any;
-}
-
-export class NotAnArrayOfActionsError extends JobBuilderError {
-  ilegalValue: any;
-}
-
-export class InvalidJobError extends JobBuilderError {
-  constructor(jobName: string);
-}
-
-export class ActionLog {
+declare class ActionLog {
   action: string;
 
   output: any;
@@ -72,77 +32,57 @@ export class ActionLog {
   at: number;
 }
 
-export class Action {
-  name: string;
-
-  handler: ActionPayloadHandler;
-
-  payload: ActionPayload;
-
-  type: string;
-
+declare class Action {
   __isMeAction: boolean;
 
-  constructor(type?: ActionType | ActionDefaultType);
+  __type: string;
 
-  withPayload(payload: ActionPayload): Action;
+  name: string;
+
+  page: any;
+
+  libs: any;
+
+  params: any;
+
+  currentIdx: any;
+
+  isBreak: boolean;
+
+  constructor(type: string);
 
   withName(name: string): Action;
-
-  withHandler(handler: ActionPayloadHandler): Action;
 
   run(): Promise<any>;
 }
 
-export class ActionPayload {
-  params: any;
-
-  libs: any;
-
-  ctx: any;
-
-  page: any;
-
-  logs: ActionLog[];
-
-  currentIdx: number;
-
-  actions: Action[];
-
-  stacks: Action[];
-
-  isBreak: IsBreakFunction;
-
-  constructor(obj: ActionPayload);
-}
-
-export class BreakPointAction extends Action {
+declare class BreakPointAction extends Action {
   constructor();
 }
 
-export class IfAction extends Action {
+declare class IfAction extends Action {
   _if: Action;
 
   _then: Action[];
 
   _else: Action[];
 
-  constructor();
+  constructor(action: Action);
 
   Then(actions: Action[]): IfAction;
 
   Else(actions: Action[]): IfAction;
 }
 
-export class Job {
+declare class Job {
   name: string;
 
   actions: Action[];
 
-  constructor(obj: Job);
+  constructor(obj: JobConstructor);
 }
 
-export class ForAction extends Action {
+declare class ForAction extends Action {
   _generator: any[] | ArrayGeneratorFunction | Action;
 
   _each: CreateActionFunction[] | Action[];
@@ -164,7 +104,7 @@ export function WaitForTimeout(timeout: number): Action;
 
 export function BringToFront(): Action;
 
-export function ScreenShot(selector?: string, saveTo?: string | DefaultScreenshotSaveTo, type?: ImageType | DefaultScreenshotSaveTo): Action;
+export function ScreenShot(selector?: string, saveTo?: string, type?: ImageType): Action;
 
 export function WaitForNavigation(waitUntil: PuppeteerLifeCycleEvent): Action;
 
@@ -184,8 +124,9 @@ export function If(action: Action): IfAction;
 
 export function For(action: any[] | ArrayGeneratorFunction | Action): ForAction;
 
-export function PageEval(handler?: Funktsion): Action;
+// eslint-disable-next-line @typescript-eslint/ban-types
+export function PageEval(handler?: Function): Action;
 
-export function IsEqual(getter: Funktsion | Action, value: any): Action;
+export function IsEqual(getter: Action, value: any): Action;
 
-export function IsStrictEqual(getter: Funktsion | Action, value: any): Action;
+export function IsStrictEqual(getter: Action, value: any): Action;

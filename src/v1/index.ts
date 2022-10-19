@@ -1,260 +1,117 @@
 import Action from "./actions/Action";
 import BreakPointAction from "./actions/BreakPointAction";
+import BringToFrontAction from "./actions/BringToFrontAction";
+import ClickAction from "./actions/ClickAction";
+import CurrentUrlAction from "./actions/CurrentUrlAction";
 import ForAction from "./actions/ForAction";
+import GetActionOutputAction from "./actions/GetActionOutputAction";
+import GetTextContentAction from "./actions/GetTextContentAction";
+import GetValueFromParamsAction from "./actions/GetValueFromParamsAction";
+import GoToAction from "./actions/GoToAction";
 import IfAction from "./actions/IfAction";
-import NotInSupportedValuesError from "./errors/NotInSupportedValuesError";
+import IsEqualAction from "./actions/IsEqualAction";
+import IsStrictEqualAction from "./actions/IsStrictEqualAction";
+import PageEvalAction from "./actions/PageEvalAction";
+import ReloadAction from "./actions/ReloadAction";
+import ScreenShotAction from "./actions/ScreenShotAction";
+import TypeInAction from "./actions/TypeInAction";
+import WaitForNavigationAction from "./actions/WaitForNavigationAction";
+import WaitForTimeoutAction from "./actions/WaitForTimeoutAction";
 import RequiredParamError from "./errors/RequiredParamError";
-import { PuppeteerLifeCycleEvent, ActionPayloadHandler, GetValueFromOutputsFunction, ArrayGeneratorFunction } from "./types";
+import { PuppeteerLifeCycleEvent, ArrayGeneratorFunction, ClickOpts, GetValueFromParamsFunction, GetActionOutputOpts } from "./types";
 
-export * from "./utils";
-export { default as ActionLog } from "./actions/ActionLog";
-export { default as ActionPayload } from "./actions/ActionPayload";
-export { default as Job } from "./Job";
-export { default as Action } from "./actions/Action";
-export { default as BreakPointAction } from "./actions/BreakPointAction";
-export { default as ForAction } from "./actions/ForAction";
-export { default as IfAction } from "./actions/IfAction";
-export { default as NotInSupportedValuesError } from "./errors/NotInSupportedValuesError";
-export { default as RequiredParamError } from "./errors/RequiredParamError";
-export { default as InvalidJobError } from "./errors/InvalidJobError";
-export { default as JobBuilderError } from "./errors/JobBuilderError";
-export { default as NotAnActionError } from "./errors/NotAnActionError";
-export { default as NotAnArrayOfActionsError } from "./errors/NotAnArrayOfActionError";
-
-export function Click(selector: string, opts = { clickCount: 1 }): Action {
+export function Click(selector: string, opts: ClickOpts = { clickCount: 1 }) {
   if (!selector) throw new RequiredParamError("selector").withBuilderName(Click.name);
-  return new Action().withName(`${Click.name}: ${selector}`).withHandler(async (payload) => {
-    const { page } = payload;
-    await page.click(selector, opts);
-  });
+  return new ClickAction(selector, opts).withName(`${Click.name}: ${selector}`);
 }
 
-export function GoTo(url: string): Action {
+export function GoTo(url: string) {
   if (!url) throw new RequiredParamError("url").withBuilderName(GoTo.name);
-  return new Action().withName(`${GoTo.name}: ${url}`).withHandler(async (payload) => {
-    const { page } = payload;
-    await page.goto(url);
-  });
+  return new GoToAction(url).withName(`${GoTo.name}: ${url}`);
 }
 
-export function CurrentUrl(): Action {
-  return new Action().withName(`${CurrentUrl.name}`).withHandler((payload) => {
-    const { page } = payload;
-    const output = page.url();
-    return output;
-  });
+export function CurrentUrl() {
+  return new CurrentUrlAction().withName(`${CurrentUrlAction.name}`);
 }
 
-export function Reload(): Action {
-  return new Action().withName(Reload.name).withHandler(async (payload) => {
-    const { page } = payload;
-    await page.reload();
-  });
+export function Reload() {
+  return new ReloadAction().withName(Reload.name);
 }
 
-export function F5(): Action {
-  return Reload();
+export function F5() {
+  return new ReloadAction().withName(F5.name);
 }
 
-export function WaitForTimeout(timeout: number): Action {
+export function WaitForTimeout(timeout: number) {
   if (!timeout) throw new RequiredParamError("timeout").withBuilderName(WaitForTimeout.name);
-  return new Action().withName(`${WaitForTimeout.name}: ${timeout}`).withHandler(async (payload) => {
-    const { page } = payload;
-    await page.waitForTimeout(timeout);
-  });
+  return new WaitForTimeoutAction(timeout).withName(`${WaitForTimeout.name}: ${timeout}`);
 }
 
-export function BringToFront(): Action {
-  return new Action().withName(`${BringToFront.name}`).withHandler(async (payload) => {
-    const { page } = payload;
-    await page.bringToFront();
-  });
+export function BringToFront() {
+  return new BringToFrontAction().withName(`${BringToFront.name}`);
 }
 
-export function ScreenShot(selector: string, saveTo = "./tmp/temp.png", type = "png"): Action {
-  return new Action().withName(`${ScreenShot.name}: ${selector}`).withHandler(async (payload) => {
-    const { page } = payload;
-    const output = { saveTo: saveTo, type: type };
-    if (!selector) {
-      await page.screenshot({ path: saveTo, type: type });
-      return output;
-    }
-    const element = await page.$(selector);
-    await element.screenshot({ path: saveTo, type: type });
-    return output;
-  });
+export function ScreenShot(selector: string, saveTo = "./tmp/temp.png", type = "png") {
+  return new ScreenShotAction(selector, saveTo, type).withName(`${ScreenShot.name}: ${selector} > ${saveTo}`);
 }
 
-export function WaitForNavigation(waitUntil: PuppeteerLifeCycleEvent = "networkidle0"): Action {
-  return new Action().withName(`${ScreenShot.name}: ${waitUntil}`).withHandler(async (payload) => {
-    const { page } = payload;
-    await page.waitForNavigation({ waitUntil: waitUntil });
-  });
+export function WaitForNavigation(waitUntil: PuppeteerLifeCycleEvent = "networkidle0") {
+  return new WaitForNavigationAction(waitUntil).withName(`${WaitForNavigation.name}: ${waitUntil}`);
 }
 
-export function GetValueFromParams(getter: (params: any) => any) {
+export function GetValueFromParams(getter: GetValueFromParamsFunction) {
   if (!getter) throw new RequiredParamError("getter").withBuilderName(GetValueFromParams.name);
-  return new Action().withName(`${GetValueFromParams.name}: ${getter.name}`).withHandler((payload) => {
-    const { params } = payload;
-    const output = getter(params);
-    return output;
-  });
+  return new GetValueFromParamsAction(getter).withName(`${GetValueFromParams.name}: ${getter.name}`);
 }
 
-/**
- * Ex: GetActionOutput(0)
- * Ex: GetActionOutput("prev")
- * Ex: GetActionOutput((outputs) => { your code })
- */
-export function GetActionOutput(getter: number | string | GetValueFromOutputsFunction): Action {
-  if (!getter) throw new RequiredParamError("getter").withBuilderName(GetValueFromParams.name);
-
-  // not "not a number" so it's a number
-  const getterString = getter as string;
-  if (!Number.isNaN(getter)) {
-    const idx = parseInt(getterString);
-    return new Action().withName(`${GetActionOutput.name}: ${idx}`).withHandler((payload) => {
-      const { logs } = payload;
-      const { output } = logs[idx];
-      return output;
-    });
-  }
-
-  // is "string" then check key words
-  if (typeof getter === "string" || getter instanceof String) {
-    const word = getter;
-    let delta = 0;
-    if (word === "prev" || word === "previous") {
-      delta = -1;
-    } else if (word === "next") {
-      delta = 1;
-    } else {
-      throw new NotInSupportedValuesError(["prev", "previous", "next"], word);
-    }
-    return new Action().withName(`${GetActionOutput.name}: ${word}`).withHandler((payload) => {
-      const { logs, currentIdx } = payload;
-      const { output } = logs[currentIdx + delta];
-      return output;
-    });
-  }
-
-  // default action
-  const getterFunction = getter as GetValueFromOutputsFunction;
-  return new Action().withName(`${GetActionOutput.name}: ${(getterFunction).name}`).withHandler(async (payload) => {
-    const { logs } = payload;
-    const outputs = logs.map((x) => x.output);
-    const output = await getterFunction(outputs);
-    return output;
-  });
+export function GetActionOutput(which: GetActionOutputOpts) {
+  if (!which) throw new RequiredParamError("which").withBuilderName(GetValueFromParams.name);
+  return new GetActionOutputAction(which).withName(`${GetActionOutput.name}: ${JSON.stringify(which)}`);
 }
 
-export function GetOutputFromPreviousAction(): Action {
-  return GetActionOutput("prev");
+export function GetOutputFromPreviousAction() {
+  return GetActionOutput({ fromCurrent: -1 });
 }
 
-export function GetTextContent(selector: string): Action {
-  if (!selector) throw new RequiredParamError("selector").withBuilderName(GetValueFromParams.name);
-
-  return new Action().withName(`${GetTextContent.name}: ${selector}`).withHandler(async (payload) => {
-    const { page } = payload;
-    const output = page.$eval(selector, (e: Element) => e.textContent);
-    return output;
-  });
+export function GetTextContent(selector: string) {
+  if (!selector) throw new RequiredParamError("selector").withBuilderName(GetTextContent.name);
+  return new GetTextContentAction(selector).withName(`${GetTextContent.name}: ${selector}`);
 }
 
 /**
  * Ex: TypeIn("#input-username", "123412341234")
  * Ex: TypeIn("#input-password", GetTextContent("#hidden-password"))
  */
-export function TypeIn(selector: string, getter: string | Action): Action {
+export function TypeIn(selector: string, value: string | Action) {
   if (!selector) throw new RequiredParamError("selector").withBuilderName(TypeIn.name);
-  if (!getter) throw new RequiredParamError("getter").withBuilderName(TypeIn.name);
-
-  if ((getter as Action).__isMeAction) {
-    const action = getter as Action;
-    return new Action().withName(`${TypeIn.name}: ${selector} ${action.name}`).withHandler(async (payload) => {
-      const valueToType = await action.withPayload(payload).run();
-      const { page } = payload;
-      await page.type(selector, valueToType);
-      return valueToType;
-    });
-  }
-
-  const valueToType = String(getter); // default string input
-  return new Action().withName(`${TypeIn.name}: ${selector} ${valueToType}`).withHandler(async (payload) => {
-    const { page } = payload;
-    await page.type(selector, valueToType);
-  });
+  if (!value) throw new RequiredParamError("value").withBuilderName(TypeIn.name);
+  return new TypeInAction(selector, value).withName(`${TypeIn.name}: ${selector}`);
 }
 
-export function BreakPoint(): BreakPointAction {
+export function BreakPoint() {
   return new BreakPointAction().withName(BreakPoint.name);
 }
 
-export function If(action: Action): IfAction {
-  return new IfAction(action).withName(If.name);
+export function If(IF: Action) {
+  return new IfAction(IF).withName(If.name);
 }
 
-export function For(action: any[] | ArrayGeneratorFunction | Action): ForAction {
+export function For(action: any[] | ArrayGeneratorFunction | Action) {
   return new ForAction(action).withName(For.name);
 }
 
-export function IsEqual(getter: ActionPayloadHandler | Action, value: any): Action {
+export function IsEqual(getter: Action, value: any) {
   if (!getter) throw new RequiredParamError("getter").withBuilderName(IsEqual.name);
-  const getterAction = getter as Action;
-  if (getterAction.__isMeAction) {
-    return new Action().withName(`${IsEqual.name}: ${getterAction.name} == ${value}`).withHandler(async (payload) => {
-      const gotValue = await getterAction.withPayload(payload).run();
-      // eslint-disable-next-line eqeqeq
-      if (gotValue == value) {
-        return true;
-      }
-      return false;
-    });
-  }
-
-  const geterFunction: ActionPayloadHandler = getter as ActionPayloadHandler;
-  return new Action().withName(IsEqual.name).withHandler(async (payload) => {
-    const gotValue = await geterFunction(payload);
-    // eslint-disable-next-line eqeqeq
-    if (gotValue == value) {
-      return true;
-    }
-    return false;
-  });
+  return new IsEqualAction(getter, value).withName(`${IsEqual.name}: ${getter.name} == ${value}`);
 }
 
-export function IsStrictEqual(getter: ActionPayloadHandler | Action, value: any): Action {
+export function IsStrictEqual(getter: Action, value: any) {
   if (!getter) throw new RequiredParamError("getter").withBuilderName(IsEqual.name);
-  const getterAction = getter as Action;
-  if (getterAction.__isMeAction) {
-    return new Action().withName(`${IsEqual.name}: ${getterAction.name} == ${value}`).withHandler(async (payload) => {
-      const gotValue = await getterAction.withPayload(payload).run();
-      // eslint-disable-next-line eqeqeq
-      if (gotValue == value) {
-        return true;
-      }
-      return false;
-    });
-  }
-
-  const geterFunction: ActionPayloadHandler = getter as ActionPayloadHandler;
-  return new Action().withName(IsEqual.name).withHandler(async (payload) => {
-    const gotValue = await geterFunction(payload);
-    // eslint-disable-next-line eqeqeq
-    if (gotValue == value) {
-      return true;
-    }
-    return false;
-  });
+  return new IsStrictEqualAction(getter, value).withName(`${IsEqual.name}: ${getter.name} === ${value}`);
 }
 
-export function PageEval(handler: ActionPayloadHandler): Action {
+// eslint-disable-next-line @typescript-eslint/ban-types
+export function PageEval(handler: Function) {
   if (!handler) throw new RequiredParamError("handler").withBuilderName(PageEval.name);
-
-  return new Action().withName(`${PageEval.name}: ${handler.name}`).withHandler(async (payload) => {
-    const { page } = payload;
-    const output = await page.evaluate(handler);
-    return output;
-  });
+  return new PageEvalAction(handler).withName(`${PageEval.name}: ${handler.name}`);
 }

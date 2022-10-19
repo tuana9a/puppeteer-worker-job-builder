@@ -1,21 +1,29 @@
-import ActionPayload from "./ActionPayload";
-import { ActionPayloadHandler } from "../types";
-import ActionLog from "./ActionLog";
-
 export default class Action {
   __isMeAction: boolean;
 
-  type: string;
+  __type: string;
 
   name: string;
 
-  handler: ActionPayloadHandler;
+  page: any;
 
-  payload: ActionPayload;
+  libs: any;
 
-  constructor(type = Action.name) {
+  params: any;
+
+  currentIdx: any;
+
+  isBreak: boolean;
+
+  // eslint-disable-next-line no-use-before-define
+  stacks: Action[];
+
+  outputs: any[];
+
+  constructor(type: string) {
+    this.__type = type;
     this.__isMeAction = true;
-    this.type = type;
+    this.isBreak = false;
   }
 
   withName(name: string) {
@@ -23,29 +31,46 @@ export default class Action {
     return this;
   }
 
-  withPayload(payload: ActionPayload) {
-    this.payload = payload;
+  withStacks(stacks: Action[]) {
+    this.stacks = stacks;
     return this;
   }
 
-  withHandler(handler: ActionPayloadHandler) {
-    this.handler = handler;
+  withOutputs(outputs: Action[]) {
+    this.outputs = outputs;
     return this;
   }
 
-  getPayload(): ActionPayload {
-    return this.payload;
+  withPage(page: any) {
+    this.page = page;
+    return this;
   }
 
-  async _run() {
-    const output = await this.handler(this.payload);
-    return output;
+  withLibs(libs: any) {
+    this.libs = libs;
+    return this;
+  }
+
+  withParams(params: any) {
+    this.params = params;
+    return this;
+  }
+
+  breaked() {
+    this.isBreak = true;
+    return this;
+  }
+
+  notBreak() {
+    this.isBreak = false;
+    return this;
+  }
+
+  setCurrentIdx(currentIdx: number) {
+    this.currentIdx = currentIdx;
   }
 
   async run() {
-    const payload = this.getPayload();
-    const output = await this._run();
-    payload.logs.push(new ActionLog({ action: this.name, output: output }));
-    return output;
+    return undefined;
   }
 }

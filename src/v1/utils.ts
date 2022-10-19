@@ -5,19 +5,10 @@ export function isValidAction(action: Action) {
   if (!action) {
     return false;
   }
-  if (!action.withPayload) {
-    return false;
-  }
   if (!action.withName) {
     return false;
   }
-  if (!action.withHandler) {
-    return false;
-  }
   if (!action.run) {
-    return false;
-  }
-  if (!action._run) {
     return false;
   }
   // IfAction not use handler so not check handler
@@ -48,4 +39,12 @@ export function isValidJob(job: Job) {
     return false;
   }
   return true;
+}
+
+export function nullify(object: any) {
+  const keys = Object.keys(object);
+  for (const key of keys) {
+    // eslint-disable-next-line no-param-reassign
+    object[key] = null;
+  }
 }
