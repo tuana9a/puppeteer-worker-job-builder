@@ -77,7 +77,19 @@ declare class IfAction extends Action {
 declare class Job {
   name: string;
 
+  params: any;
+
+  page: any;
+
+  libs: any;
+
   actions: Action[];
+
+  stacks: Action[];
+
+  outputs: Action[];
+
+  opts: any;
 
   constructor(obj: JobConstructor);
 }
@@ -90,7 +102,7 @@ declare class ForAction extends Action {
   Each(actions: CreateActionFunction[] | Action[]): ForAction;
 }
 
-export function Click(selector: string, opts?: { clickCount?: number; }): Action;
+export function Click(selector: string, opts?: ClickOpts): Action;
 
 export function GoTo(url: string): Action;
 
@@ -110,17 +122,17 @@ export function WaitForNavigation(waitUntil: PuppeteerLifeCycleEvent): Action;
 
 export function GetValueFromParams(getter: (params: any) => any): Action;
 
-export function GetActionOutput(getter: number | string | GetValueFromOutputsFunction): Action;
+export function GetActionOutput(which: GetActionOutputOpts): Action;
 
 export function GetOutputFromPreviousAction(): Action;
 
 export function GetTextContent(selector: string): Action;
 
-export function TypeIn(selector: string, getter: string | Action): Action;
+export function TypeIn(selector: string, value: string | Action): Action;
 
 export function BreakPoint(): BreakPointAction;
 
-export function If(action: Action): IfAction;
+export function If(IF: Action): IfAction;
 
 export function For(action: any[] | ArrayGeneratorFunction | Action): ForAction;
 

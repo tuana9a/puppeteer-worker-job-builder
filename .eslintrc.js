@@ -38,5 +38,6 @@ module.exports = {
     "no-underscore-dangle": "off",
     "no-unused-vars": "warn",
     "import/extensions": "off",
+    "@typescript-eslint/no-explicit-any": "off",
   },
 };
