@@ -1,4 +1,5 @@
 import { ArrayGeneratorFunction, CreateActionFunction } from "../types";
+import { nullify } from "../utils";
 import Action from "./Action";
 
 export default class ForAction extends Action {
@@ -18,18 +19,21 @@ export default class ForAction extends Action {
     return this;
   }
 
-  async _run() {
-    const payload = this.getPayload();
+  async run() {
     let iterators: any[] = [];
-    const action = this._generator as Action;
-    const funktion = this._generator as ArrayGeneratorFunction;
-    const arrayOfValues = this._generator as any[];
-    if (action.__isMeAction) {
-      iterators = await action.withPayload(payload).run();
-    } else if (Array.isArray(arrayOfValues)) {
-      iterators = arrayOfValues;
+    if ((this._generator as Action).__isMeAction) {
+      iterators = await (this._generator as Action)
+        .withLibs(this.libs)
+        .withOutputs(this.outputs)
+        .withPage(this.page)
+        .withParams(this.params)
+        .withStacks(this.stacks)
+        .run();
+      nullify(this._generator);
+    } else if (Array.isArray(this._generator as any[])) {
+      iterators = this._generator as any[];
     } else {
-      iterators = await funktion(payload);
+      iterators = await (this._generator as ArrayGeneratorFunction)();
     }
     const eachs: CreateActionFunction[] | Action[] = Array.from((this._each as any[])).reverse();
     iterators = Array.from(iterators).reverse();
@@ -38,10 +42,10 @@ export default class ForAction extends Action {
         const eachAction = each as Action;
         const eachCreateAction = each as CreateActionFunction;
         if (eachAction.__isMeAction) {
-          payload.stacks.push(eachAction);
+          this.stacks.push(eachAction);
         } else {
           const newAction = await eachCreateAction(iterate);
-          payload.stacks.push(newAction);
+          this.stacks.push(newAction);
         }
       }
     }

@@ -1,13 +1,13 @@
 export default class ActionLog {
-  public action: string;
+  action: string;
 
-  public output: any;
+  output: any;
 
-  public error: any;
+  error: any;
 
-  public at: number;
+  at: number;
 
-  constructor({ action, output, error, at }: { action: string; output: any, error?: any, at?: number }) {
+  constructor({ action, output, error, at }: { action: string; output?: any, error?: any, at?: number }) {
     this.action = action;
     this.output = output;
     this.error = error;
