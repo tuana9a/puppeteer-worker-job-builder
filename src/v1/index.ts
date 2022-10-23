@@ -117,7 +117,7 @@ export function BreakPoint() {
 }
 
 export function If(IF: Action) {
-  return new IfAction(IF).withName(If.name);
+  return new IfAction(IF).withName(`${If.name}: ${IF.name}`);
 }
 
 export function For(action: any[] | ArrayGeneratorFunction | Action) {
