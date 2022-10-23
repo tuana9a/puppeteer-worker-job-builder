@@ -48,3 +48,11 @@ export function nullify(object: any) {
     object[key] = null;
   }
 }
+
+export function toPrettyErr(err: Error) {
+  return {
+    name: err.name,
+    message: err.message,
+    stack: err.stack.split("\n"),
+  };
+}

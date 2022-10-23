@@ -8,6 +8,8 @@ export interface GetActionOutputOpts { fromCurrent?: number; direct?: number }
 
 export interface JobConstructor { name: string; params: any; page: any; libs: any; actions: Action[]; }
 
+export interface JobOpts { doing?: (doing: any) => any }
+
 export type IsBreakFunction = (...params: any[]) => boolean;
 
 export type CreateActionFunction = (...params: any[]) => Promise<Action>;

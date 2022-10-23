@@ -1,4 +1,4 @@
-import InvalidGetActionOutputOpts from "../errors/InvalidGetActionOutputOpts";
+import InvalidGetActionOutputOptsError from "../errors/InvalidGetActionOutputOptsError";
 import { GetActionOutputOpts } from "../types";
 import Action from "./Action";
 
@@ -17,6 +17,6 @@ export default class GetActionOutputAction extends Action {
     if (Number.isSafeInteger(this.which.fromCurrent)) {
       return this.outputs[this.currentIdx + this.which.fromCurrent];
     }
-    throw new InvalidGetActionOutputOpts(this.which);
+    throw new InvalidGetActionOutputOptsError(this.which);
   }
 }
