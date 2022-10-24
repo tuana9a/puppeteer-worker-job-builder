@@ -8,6 +8,8 @@ interface GetActionOutputOpts { fromCurrent?: number; direct?: number }
 
 interface JobConstructor { name: string; params: any; page: any; libs: any; actions: Action[]; }
 
+interface JobOpts { doing?: (doing: any) => any }
+
 type IsBreakFunction = (...params: any[]) => boolean;
 
 type CreateActionFunction = (...params: any[]) => Promise<Action>;
@@ -22,7 +24,49 @@ type GetValueFromOutputsFunction = (outputs: any[]) => any;
 
 type ImageType = "png"
 
-declare class ActionLog {
+export class JobBuilderError extends Error {
+  builderName: string;
+
+  withBuilderName(builderName: string): this;
+}
+
+export class RequiredParamError extends JobBuilderError {
+  paramName: string;
+
+  constructor(paramName: string);
+}
+
+export class InvalidGetActionOutputOptsError extends JobBuilderError {
+  value: any;
+
+  constructor(value: any);
+}
+
+export class InvalidJobError extends JobBuilderError {
+  constructor(jobName: string);
+}
+
+export class NotAnActionError extends JobBuilderError {
+  ilegalValue: any;
+
+  constructor(ilegalValue: any);
+}
+
+export class NotAnArrayOfActionsError extends JobBuilderError {
+  ilegalValue: any;
+
+  constructor(ilegalValue: any);
+}
+
+export class NotInSupportedValuesError extends JobBuilderError {
+  input: any;
+
+  supportedValues: any[];
+
+  constructor(supportedValues: any[], input: any);
+}
+
+export class ActionLog {
   action: string;
 
   output: any;
@@ -32,7 +76,7 @@ declare class ActionLog {
   at: number;
 }
 
-declare class Action {
+export class Action {
   __isMeAction: boolean;
 
   __type: string;
@@ -56,11 +100,11 @@ declare class Action {
   run(): Promise<any>;
 }
 
-declare class BreakPointAction extends Action {
+export class BreakPointAction extends Action {
   constructor();
 }
 
-declare class IfAction extends Action {
+export class IfAction extends Action {
   _if: Action;
 
   _then: Action[];
@@ -74,7 +118,7 @@ declare class IfAction extends Action {
   Else(actions: Action[]): IfAction;
 }
 
-declare class Job {
+export class Job {
   name: string;
 
   params: any;
@@ -89,12 +133,14 @@ declare class Job {
 
   outputs: Action[];
 
-  opts: any;
+  opts: JobOpts;
 
   constructor(obj: JobConstructor);
+
+  withOpts(opts: JobOpts): Job;
 }
 
-declare class ForAction extends Action {
+export class ForAction extends Action {
   _generator: any[] | ArrayGeneratorFunction | Action;
 
   _each: CreateActionFunction[] | Action[];

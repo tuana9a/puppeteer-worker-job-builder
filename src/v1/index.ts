@@ -1,4 +1,5 @@
 import Action from "./actions/Action";
+import ActionLog from "./actions/ActionLog";
 import BreakPointAction from "./actions/BreakPointAction";
 import BringToFrontAction from "./actions/BringToFrontAction";
 import ClickAction from "./actions/ClickAction";
@@ -17,8 +18,31 @@ import ScreenShotAction from "./actions/ScreenShotAction";
 import TypeInAction from "./actions/TypeInAction";
 import WaitForNavigationAction from "./actions/WaitForNavigationAction";
 import WaitForTimeoutAction from "./actions/WaitForTimeoutAction";
+import InvalidGetActionOutputOptsError from "./errors/InvalidGetActionOutputOptsError";
+import InvalidJobError from "./errors/InvalidJobError";
+import JobBuilderError from "./errors/JobBuilderError";
+import NotAnActionError from "./errors/NotAnActionError";
+import NotAnArrayOfActionsError from "./errors/NotAnArrayOfActionError";
+import NotInSupportedValuesError from "./errors/NotInSupportedValuesError";
 import RequiredParamError from "./errors/RequiredParamError";
+import Job from "./Job";
 import { PuppeteerLifeCycleEvent, ArrayGeneratorFunction, ClickOpts, GetValueFromParamsFunction, GetActionOutputOpts } from "./types";
+
+export {
+  JobBuilderError,
+  RequiredParamError,
+  InvalidGetActionOutputOptsError,
+  InvalidJobError,
+  NotAnActionError,
+  NotAnArrayOfActionsError,
+  NotInSupportedValuesError,
+  Job,
+  Action,
+  ActionLog,
+  IfAction,
+  ForAction,
+  BreakPointAction,
+};
 
 export function Click(selector: string, opts: ClickOpts = { clickCount: 1 }) {
   if (!selector) throw new RequiredParamError("selector").withBuilderName(Click.name);
@@ -93,7 +117,7 @@ export function BreakPoint() {
 }
 
 export function If(IF: Action) {
-  return new IfAction(IF).withName(If.name);
+  return new IfAction(IF).withName(`${If.name}: ${IF.name}`);
 }
 
 export function For(action: any[] | ArrayGeneratorFunction | Action) {
