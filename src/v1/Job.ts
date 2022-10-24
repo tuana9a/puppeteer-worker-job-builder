@@ -1,7 +1,7 @@
 import Action from "./actions/Action";
 import ActionLog from "./actions/ActionLog";
-import { JobConstructor } from "./types";
-import { nullify } from "./utils";
+import { JobConstructor, JobOpts } from "./types";
+import { nullify, toPrettyErr } from "./utils";
 
 export default class Job {
   name: string;
@@ -18,7 +18,7 @@ export default class Job {
 
   outputs: Action[];
 
-  opts: any;
+  opts: JobOpts;
 
   constructor({ name, page, libs, params, actions }: JobConstructor) {
     this.name = name;
@@ -28,6 +28,11 @@ export default class Job {
     this.actions = actions;
     this.outputs = [];
     this.stacks = Array.from<Action>(actions).reverse();
+  }
+
+  withOpts(opts: JobOpts) {
+    this.opts = opts;
+    return this;
   }
 
   async run() {
@@ -61,11 +66,7 @@ export default class Job {
       } catch (error) {
         logs.push(new ActionLog({
           action: action.name,
-          error: {
-            name: error.name,
-            message: error.message,
-            stack: error.stack.split("\n"),
-          },
+          error: toPrettyErr(error),
         }));
         break;
       }
