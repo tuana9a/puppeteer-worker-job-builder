@@ -1,5 +1,6 @@
-import { PuppeteerLifeCycleEvent } from "../types";
-import Action from "./Action";
+import PuppeteerLifeCycleEvent from "../types/PuppeteerLifeCycleEvent";
+import Action from "../Action";
+import ActionLog from "../ActionLog";
 
 export default class WaitForNavigationAction extends Action {
   waitUntil: PuppeteerLifeCycleEvent;
@@ -11,6 +12,7 @@ export default class WaitForNavigationAction extends Action {
   }
 
   async run() {
-    await this.page.waitForNavigation({ waitUntil: this.waitUntil });
+    this.__context.logs.push(new ActionLog({ action: this.getName(), output: this.waitUntil }).now());
+    await this.__context.page.waitForNavigation({ waitUntil: this.waitUntil });
   }
 }

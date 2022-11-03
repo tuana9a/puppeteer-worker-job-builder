@@ -1,5 +1,5 @@
-import Action from "./actions/Action";
-import ActionLog from "./actions/ActionLog";
+import Action from "./Action";
+import ActionLog from "./ActionLog";
 import BreakPointAction from "./actions/BreakPointAction";
 import BringToFrontAction from "./actions/BringToFrontAction";
 import ClickAction from "./actions/ClickAction";
@@ -18,30 +18,74 @@ import ScreenShotAction from "./actions/ScreenShotAction";
 import TypeInAction from "./actions/TypeInAction";
 import WaitForNavigationAction from "./actions/WaitForNavigationAction";
 import WaitForTimeoutAction from "./actions/WaitForTimeoutAction";
+import Context from "./Context";
+import DoingInfo from "./DoingInfo";
 import InvalidGetActionOutputOptsError from "./errors/InvalidGetActionOutputOptsError";
 import InvalidJobError from "./errors/InvalidJobError";
 import JobBuilderError from "./errors/JobBuilderError";
 import NotAnActionError from "./errors/NotAnActionError";
-import NotAnArrayOfActionsError from "./errors/NotAnArrayOfActionError";
+import NotAnArrayOfActionError from "./errors/NotAnArrayOfActionError";
 import NotInSupportedValuesError from "./errors/NotInSupportedValuesError";
 import RequiredParamError from "./errors/RequiredParamError";
 import Job from "./Job";
-import { PuppeteerLifeCycleEvent, ArrayGeneratorFunction, ClickOpts, GetValueFromParamsFunction, GetActionOutputOpts } from "./types";
+import ArrayGeneratorFunction from "./types/ArrayGeneratorFunction";
+import ClickOpts from "./types/ClickOpts";
+import CreateActionFunction from "./types/CreateActionFunction";
+import GetActionOutputOpts from "./types/GetActionOutputOpts";
+import GetValueFromOutputsFunction from "./types/GetValueFromOutputsFunction";
+import GetValueFromParamsFunction from "./types/GetValueFromParamsFunction";
+import IsBreakFunction from "./types/IsBreakFunction";
+import PuppeteerLifeCycleEvent from "./types/PuppeteerLifeCycleEvent";
+import isValidAction from "./utils/isValidAction";
+import isValidArrayOfActions from "./utils/isValidArrayOfActions";
+import isValidJob from "./utils/isValidJob";
 
 export {
-  JobBuilderError,
-  RequiredParamError,
-  InvalidGetActionOutputOptsError,
-  InvalidJobError,
-  NotAnActionError,
-  NotAnArrayOfActionsError,
-  NotInSupportedValuesError,
-  Job,
+  // actions
   Action,
   ActionLog,
-  IfAction,
-  ForAction,
+  Context,
+  DoingInfo,
+  Job,
   BreakPointAction,
+  BringToFrontAction,
+  ClickAction,
+  CurrentUrlAction,
+  ForAction,
+  GetActionOutputAction,
+  GetTextContentAction,
+  GetValueFromParamsAction,
+  GoToAction,
+  IfAction,
+  IsEqualAction,
+  IsStrictEqualAction,
+  PageEvalAction,
+  ReloadAction,
+  ScreenShotAction,
+  TypeInAction,
+  WaitForNavigationAction,
+  WaitForTimeoutAction,
+  // errors
+  InvalidJobError,
+  InvalidGetActionOutputOptsError,
+  JobBuilderError,
+  NotAnActionError,
+  NotAnArrayOfActionError,
+  NotInSupportedValuesError,
+  RequiredParamError,
+  // types
+  ArrayGeneratorFunction,
+  ClickOpts,
+  CreateActionFunction,
+  GetActionOutputOpts,
+  GetValueFromOutputsFunction,
+  GetValueFromParamsFunction,
+  IsBreakFunction,
+  PuppeteerLifeCycleEvent,
+  // utils
+  isValidJob,
+  isValidAction,
+  isValidArrayOfActions,
 };
 
 export function Click(selector: string, opts: ClickOpts = { clickCount: 1 }) {
@@ -85,7 +129,7 @@ export function WaitForNavigation(waitUntil: PuppeteerLifeCycleEvent = "networki
 
 export function GetValueFromParams(getter: GetValueFromParamsFunction) {
   if (!getter) throw new RequiredParamError("getter").withBuilderName(GetValueFromParams.name);
-  return new GetValueFromParamsAction(getter).withName(`${GetValueFromParams.name}: ${getter.name}`);
+  return new GetValueFromParamsAction(getter).withName(`${GetValueFromParams.name}: ${String(getter)}`);
 }
 
 export function GetActionOutput(which: GetActionOutputOpts) {
@@ -134,8 +178,7 @@ export function IsStrictEqual(getter: Action, value: any) {
   return new IsStrictEqualAction(getter, value).withName(`${IsEqual.name}: ${getter.name} === ${value}`);
 }
 
-// eslint-disable-next-line @typescript-eslint/ban-types
-export function PageEval(handler: Function) {
+export function PageEval(handler: () => Promise<any>) {
   if (!handler) throw new RequiredParamError("handler").withBuilderName(PageEval.name);
   return new PageEvalAction(handler).withName(`${PageEval.name}: ${handler.name}`);
 }

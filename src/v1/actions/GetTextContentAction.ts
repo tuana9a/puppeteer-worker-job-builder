@@ -1,4 +1,5 @@
-import Action from "./Action";
+import Action from "../Action";
+import ActionLog from "../ActionLog";
 
 export default class GetTextContentAction extends Action {
   selector: string;
@@ -9,7 +10,8 @@ export default class GetTextContentAction extends Action {
   }
 
   async run() {
-    const output = await this.page.$eval(this.selector, (e: Element) => e.textContent);
-    return output;
+    const content = await this.__context.page.$eval(this.selector, (e: Element) => e.textContent);
+    this.__context.logs.push(new ActionLog({ action: this.getName(), output: content }).now());
+    return content;
   }
 }

@@ -1,4 +1,5 @@
-import Action from "./Action";
+import Action from "../Action";
+import ActionLog from "../ActionLog";
 
 export default class GoToAction extends Action {
   url: string;
@@ -9,6 +10,7 @@ export default class GoToAction extends Action {
   }
 
   async run() {
-    await this.page.goto(this.url);
+    this.__context.logs.push(new ActionLog({ action: this.getName(), output: this.url }).now());
+    await this.__context.page.goto(this.url);
   }
 }

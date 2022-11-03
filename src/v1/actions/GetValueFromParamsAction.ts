@@ -1,5 +1,6 @@
-import { GetValueFromParamsFunction } from "../types";
-import Action from "./Action";
+import GetValueFromParamsFunction from "../types/GetValueFromOutputsFunction";
+import Action from "../Action";
+import ActionLog from "../ActionLog";
 
 export default class GetValueFromParamsAction extends Action {
   getter: GetValueFromParamsFunction;
@@ -10,7 +11,8 @@ export default class GetValueFromParamsAction extends Action {
   }
 
   async run() {
-    const output = await this.getter(this.params);
-    return output;
+    const value = await this.getter(this.__context.params);
+    this.__context.logs.push(new ActionLog({ action: this.getName(), output: value }).now());
+    return value;
   }
 }
