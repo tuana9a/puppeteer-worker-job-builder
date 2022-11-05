@@ -10,13 +10,15 @@ module.exports = {
     "airbnb-base",
     "eslint:recommended",
     "plugin:@typescript-eslint/eslint-recommended",
-    "plugin:@typescript-eslint/recommended"],
+    "plugin:@typescript-eslint/recommended",
+  ],
   plugins: [
     "@typescript-eslint",
   ],
   parserOptions: {
     ecmaVersion: "2021",
   },
+  ignorePatterns: ["node_modules/**/*"],
   settings: {
     "import/resolver": {
       node: {
@@ -27,8 +29,6 @@ module.exports = {
   rules: {
     indent: ["error", 2],
     quotes: [2, "double", "avoid-escape"],
-    "class-methods-use-this": "off",
-    radix: "off",
     "max-len": "off",
     "no-restricted-syntax": "off",
     "no-await-in-loop": "off",

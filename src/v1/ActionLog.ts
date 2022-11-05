@@ -11,6 +11,11 @@ export default class ActionLog {
     this.action = action;
     this.output = output;
     this.error = error;
-    this.at = at || Date.now();
+    this.at = at;
+  }
+
+  now() {
+    this.at = Date.now();
+    return this;
   }
 }

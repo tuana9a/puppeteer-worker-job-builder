@@ -1,4 +1,5 @@
-import Action from "./Action";
+import Action from "../Action";
+import ActionLog from "../ActionLog";
 
 export default class ScreenShotAction extends Action {
   selector: string;
@@ -15,13 +16,16 @@ export default class ScreenShotAction extends Action {
   }
 
   async run() {
-    const output = { saveTo: this.saveTo, type: this.imgType };
-    if (!this.selector) {
-      await this.page.screenshot({ path: this.saveTo, type: this.imgType });
-      return output;
+    const opts = { selector: this.selector, saveTo: this.saveTo, type: this.imgType };
+    this.__context.logs.push(new ActionLog({ action: this.getName(), output: opts }).now());
+
+    if (!opts.selector) {
+      await this.__context.page.screenshot({ path: opts.saveTo, type: opts.type });
+      return opts;
     }
-    const element = await this.page.$(this.selector);
-    await element.screenshot({ path: this.saveTo, type: this.imgType });
-    return output;
+
+    const element = await this.__context.page.$(opts.selector);
+    await element.screenshot({ path: opts.saveTo, type: opts.type });
+    return opts;
   }
 }

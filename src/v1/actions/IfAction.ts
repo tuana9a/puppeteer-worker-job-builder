@@ -1,13 +1,14 @@
-import Action from "./Action";
-import { isValidArrayOfActions, nullify } from "../utils";
+import Action from "../Action";
+import isValidArrayOfActions from "../utils/isValidArrayOfActions";
 import NotAnArrayOfActionsError from "../errors/NotAnArrayOfActionError";
+import ActionLog from "../ActionLog";
 
 export default class IfAction extends Action {
-  private _if: Action;
+  _if: Action;
 
-  private _then: Action[];
+  _then: Action[];
 
-  private _else: Action[];
+  _else: Action[];
 
   constructor(action: Action) {
     super(IfAction.name);
@@ -33,18 +34,12 @@ export default class IfAction extends Action {
   }
 
   async run() {
-    const output = await this._if
-      .withLibs(this.libs)
-      .withOutputs(this.outputs)
-      .withPage(this.page)
-      .withParams(this.params)
-      .withStacks(this.stacks)
-      .run();
-    nullify(this._if);
+    const output = await this._if.withContext(this.__context).run();
+    this.__context.logs.push(new ActionLog({ action: this.getName(), output: output }).now());
     if (output) {
-      this.stacks.push(...Array.from(this._then).reverse());
+      this.__context.stacks.push(...Array.from(this._then).reverse());
     } else {
-      this.stacks.push(...Array.from(this._else).reverse());
+      this.__context.stacks.push(...Array.from(this._else).reverse());
     }
     return output;
   }

@@ -1,5 +1,5 @@
-import { nullify } from "../utils";
-import Action from "./Action";
+import Action from "../Action";
+import ActionLog from "../ActionLog";
 
 export default class TypeInAction extends Action {
   selector: string;
@@ -14,21 +14,16 @@ export default class TypeInAction extends Action {
 
   async run() {
     if ((this.value as Action).__isMeAction) {
-      const output = await (this.value as Action)
-        .withParams(this.params)
-        .withStacks(this.stacks)
-        .withLibs(this.libs)
-        .withOutputs(this.outputs)
-        .withPage(this.page)
-        .run();
-      nullify(this.value);
-      const valueToType = String(output);
-      await this.page.type(this.selector, valueToType);
-      return valueToType;
+      const output = await (this.value as Action).withContext(this.__context).withContext(this.__context).run();
+      const text = String(output);
+      await this.__context.page.type(this.selector, text);
+      this.__context.logs.push(new ActionLog({ action: this.getName(), output: text }).now());
+      return text;
     }
 
-    const valueToType = String(this.value);
-    await this.page.type(this.selector, valueToType);
-    return valueToType;
+    const text = String(this.value);
+    await this.__context.page.type(this.selector, text);
+    this.__context.logs.push(new ActionLog({ action: this.getName(), output: text }).now());
+    return text;
   }
 }

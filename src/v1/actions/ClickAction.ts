@@ -1,5 +1,6 @@
-import { ClickOpts } from "../types";
-import Action from "./Action";
+import ClickOpts from "../types/ClickOpts";
+import Action from "../Action";
+import ActionLog from "../ActionLog";
 
 export default class ClickAction extends Action {
   selector: string;
@@ -13,6 +14,7 @@ export default class ClickAction extends Action {
   }
 
   async run() {
-    await this.page.click(this.selector, this.opts);
+    await this.__context.page.click(this.selector, this.opts);
+    this.__context.logs.push(new ActionLog({ action: this.getName() }).now());
   }
 }

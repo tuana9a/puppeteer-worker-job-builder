@@ -1,4 +1,5 @@
-import Action from "./Action";
+import Action from "../Action";
+import ActionLog from "../ActionLog";
 
 export default class ReloadAction extends Action {
   constructor() {
@@ -6,6 +7,7 @@ export default class ReloadAction extends Action {
   }
 
   async run() {
-    await this.page.reload();
+    this.__context.logs.push(new ActionLog({ action: this.getName() }).now());
+    await this.__context.page.reload();
   }
 }

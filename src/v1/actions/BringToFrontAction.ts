@@ -1,4 +1,5 @@
-import Action from "./Action";
+import Action from "../Action";
+import ActionLog from "../ActionLog";
 
 export default class BringToFrontAction extends Action {
   constructor() {
@@ -6,6 +7,8 @@ export default class BringToFrontAction extends Action {
   }
 
   async run() {
-    await this.page.bringToFront();
+    this.__context.logs.push(new ActionLog({ action: this.getName() }).now());
+
+    await this.__context.page.bringToFront();
   }
 }

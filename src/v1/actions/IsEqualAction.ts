@@ -1,5 +1,5 @@
-import { nullify } from "../utils";
-import Action from "./Action";
+import Action from "../Action";
+import ActionLog from "../ActionLog";
 
 export default class IsEqualAction extends Action {
   getter: Action;
@@ -13,18 +13,15 @@ export default class IsEqualAction extends Action {
   }
 
   async run() {
-    const got = await this.getter
-      .withLibs(this.libs)
-      .withOutputs(this.outputs)
-      .withPage(this.page)
-      .withParams(this.params)
-      .withStacks(this.stacks)
-      .run();
-    nullify(this.getter);
+    const got = await this.getter.withContext(this.__context).run();
+
     // eslint-disable-next-line eqeqeq
     if (got == this.value) {
+      this.__context.logs.push(new ActionLog({ action: this.getName(), output: true }).now());
       return true;
     }
+
+    this.__context.logs.push(new ActionLog({ action: this.getName(), output: false }).now());
     return false;
   }
 }

@@ -1,11 +1,13 @@
-import { ArrayGeneratorFunction, CreateActionFunction } from "../types";
-import { nullify } from "../utils";
-import Action from "./Action";
+import ArrayGeneratorFunction from "../types/ArrayGeneratorFunction";
+import CreateActionFunction from "../types/CreateActionFunction";
+import Action from "../Action";
+import Context from "../Context";
+import ActionLog from "../ActionLog";
 
 export default class ForAction extends Action {
-  private _generator: any[] | ArrayGeneratorFunction | Action;
+  _generator: any[] | ArrayGeneratorFunction | Action;
 
-  private _each: CreateActionFunction[] | Action[];
+  _each: (CreateActionFunction | Action)[];
 
   constructor(generator: any[] | ArrayGeneratorFunction | Action) {
     super(ForAction.name);
@@ -13,7 +15,7 @@ export default class ForAction extends Action {
     this._each = []; // IMPORTANT
   }
 
-  Each(actions: CreateActionFunction[] | Action[]) {
+  Each(actions: (CreateActionFunction | Action)[]) {
     // _each can be function or action mixed so can not check it
     this._each = actions;
     return this;
@@ -22,32 +24,44 @@ export default class ForAction extends Action {
   async run() {
     let iterators: any[] = [];
     if ((this._generator as Action).__isMeAction) {
-      iterators = await (this._generator as Action)
-        .withLibs(this.libs)
-        .withOutputs(this.outputs)
-        .withPage(this.page)
-        .withParams(this.params)
-        .withStacks(this.stacks)
-        .run();
-      nullify(this._generator);
+      iterators = await (this._generator as Action).withContext(this.__context).run();
+      this.__context.logs.push(new ActionLog({ action: this.getName(), output: iterators }).now());
     } else if (Array.isArray(this._generator as any[])) {
       iterators = this._generator as any[];
+      this.__context.logs.push(new ActionLog({ action: this.getName(), output: iterators }).now());
     } else {
       iterators = await (this._generator as ArrayGeneratorFunction)();
+      this.__context.logs.push(new ActionLog({ action: this.getName(), output: (iterators as ArrayGeneratorFunction[]).map((x) => x.name) }).now());
     }
-    const eachs: CreateActionFunction[] | Action[] = Array.from((this._each as any[])).reverse();
-    iterators = Array.from(iterators).reverse();
-    for (const iterate of iterators) {
+    const eachs: (CreateActionFunction | Action)[] = Array.from((this._each as (CreateActionFunction | Action)[]));
+    for (const i of iterators) {
+      // each loop create new context and run immediately
+      const newContext = new Context({
+        jobName: this.__context.jobName,
+        page: this.__context.page,
+        libs: this.__context.libs,
+        params: this.__context.params,
+        currentStepIdx: 0,
+        currentNestingLevel: this.__context.currentNestingLevel + 1,
+        isBreak: false,
+        stacks: [],
+        logs: [],
+        outputs: [],
+        runContext: this.__context.runContext,
+        _onDoing: this.__context._onDoing,
+        actionsToDestroy: [],
+      });
       for (const each of eachs) {
-        const eachAction = each as Action;
-        const eachCreateAction = each as CreateActionFunction;
-        if (eachAction.__isMeAction) {
-          this.stacks.push(eachAction);
+        // use .unshift will make stacks works like normal
+        if ((each as Action).__isMeAction) {
+          newContext.stacks.unshift((each as Action).withContext(newContext));
         } else {
-          const newAction = await eachCreateAction(iterate);
-          this.stacks.push(newAction);
+          const newAction = await (each as CreateActionFunction)(i);
+          newContext.stacks.unshift(newAction.withContext(newContext));
         }
       }
+      const logs = await this.__context.runContext(newContext);
+      this.__context.logs.push(new ActionLog({ action: this.getName(), output: logs }).now());
     }
     return iterators;
   }
