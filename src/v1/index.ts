@@ -5,7 +5,7 @@ import BringToFrontAction from "./actions/BringToFrontAction";
 import ClickAction from "./actions/ClickAction";
 import CurrentUrlAction from "./actions/CurrentUrlAction";
 import ForAction from "./actions/ForAction";
-import GetActionOutputAction from "./actions/GetActionOutputAction";
+import GetValueFromOutputAction from "./actions/GetActionOutputAction";
 import GetTextContentAction from "./actions/GetTextContentAction";
 import GetValueFromParamsAction from "./actions/GetValueFromParamsAction";
 import GoToAction from "./actions/GoToAction";
@@ -34,11 +34,11 @@ import CreateActionFunction from "./types/CreateActionFunction";
 import GetActionOutputOpts from "./types/GetActionOutputOpts";
 import GetValueFromOutputsFunction from "./types/GetValueFromOutputsFunction";
 import GetValueFromParamsFunction from "./types/GetValueFromParamsFunction";
-import IsBreakFunction from "./types/IsBreakFunction";
 import PuppeteerLifeCycleEvent from "./types/PuppeteerLifeCycleEvent";
 import isValidAction from "./utils/isValidAction";
 import isValidArrayOfActions from "./utils/isValidArrayOfActions";
 import isValidJob from "./utils/isValidJob";
+import toPrettyErr from "./utils/toPrettyErr";
 
 export {
   // actions
@@ -52,7 +52,7 @@ export {
   ClickAction,
   CurrentUrlAction,
   ForAction,
-  GetActionOutputAction,
+  GetValueFromOutputAction,
   GetTextContentAction,
   GetValueFromParamsAction,
   GoToAction,
@@ -80,12 +80,12 @@ export {
   GetActionOutputOpts,
   GetValueFromOutputsFunction,
   GetValueFromParamsFunction,
-  IsBreakFunction,
   PuppeteerLifeCycleEvent,
   // utils
   isValidJob,
   isValidAction,
   isValidArrayOfActions,
+  toPrettyErr,
 };
 
 export function Click(selector: string, opts: ClickOpts = { clickCount: 1 }) {
@@ -132,13 +132,13 @@ export function GetValueFromParams(getter: GetValueFromParamsFunction) {
   return new GetValueFromParamsAction(getter).withName(`${GetValueFromParams.name}: ${String(getter)}`);
 }
 
-export function GetActionOutput(which: GetActionOutputOpts) {
-  if (!which) throw new RequiredParamError("which").withBuilderName(GetValueFromParams.name);
-  return new GetActionOutputAction(which).withName(`${GetActionOutput.name}: ${JSON.stringify(which)}`);
+export function GetValueFromOutput(opts: GetActionOutputOpts) {
+  if (!opts) throw new RequiredParamError("opts").withBuilderName(GetValueFromParams.name);
+  return new GetValueFromOutputAction(opts).withName(`${GetValueFromOutput.name}: ${JSON.stringify(opts)}`);
 }
 
 export function GetOutputFromPreviousAction() {
-  return GetActionOutput({ fromCurrent: -1 });
+  return GetValueFromOutput({ fromCurrent: -1 });
 }
 
 export function GetTextContent(selector: string) {

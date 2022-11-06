@@ -10,7 +10,7 @@ export default class GoToAction extends Action {
   }
 
   async run() {
-    this.__context.logs.push(new ActionLog({ action: this.getName(), output: this.url }).now());
+    this.__context.logs.push(new ActionLog().fromAction(this).withOutput(this.url));
     await this.__context.page.goto(this.url);
   }
 }

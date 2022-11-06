@@ -2,7 +2,7 @@ import Context from "./Context";
 import nullify from "./utils/nullify";
 
 export default abstract class Action {
-  __isMeAction: boolean;
+  __isAction: boolean;
 
   __type: string;
 
@@ -16,7 +16,7 @@ export default abstract class Action {
 
   constructor(type: string) {
     this.__type = type;
-    this.__isMeAction = true;
+    this.__isAction = true;
   }
 
   withName(name: string) {
@@ -30,7 +30,6 @@ export default abstract class Action {
 
   withContext(context: Context) {
     this.__context = context;
-    this.__context.actionsToDestroy.push(this);
     return this;
   }
 

@@ -10,7 +10,7 @@ export default class WaitForTimeoutAction extends Action {
   }
 
   async run() {
-    this.__context.logs.push(new ActionLog({ action: this.getName(), output: this.timeout }).now());
+    this.__context.logs.push(new ActionLog().fromAction(this).withOutput(this.timeout));
     await this.__context.page.waitForTimeout(this.timeout);
   }
 }

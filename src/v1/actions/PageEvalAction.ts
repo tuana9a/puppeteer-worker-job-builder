@@ -11,7 +11,7 @@ export default class PageEvalAction extends Action {
 
   async run() {
     const output = await this.__context.page.evaluate(this.handler);
-    this.__context.logs.push(new ActionLog({ action: this.getName(), output: output }).now());
+    this.__context.logs.push(new ActionLog().fromAction(this).withOutput(output));
     return output;
   }
 }

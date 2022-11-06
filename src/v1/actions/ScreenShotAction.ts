@@ -17,7 +17,7 @@ export default class ScreenShotAction extends Action {
 
   async run() {
     const opts = { selector: this.selector, saveTo: this.saveTo, type: this.imgType };
-    this.__context.logs.push(new ActionLog({ action: this.getName(), output: opts }).now());
+    this.__context.logs.push(new ActionLog().fromAction(this).withOutput(opts));
 
     if (!opts.selector) {
       await this.__context.page.screenshot({ path: opts.saveTo, type: opts.type });

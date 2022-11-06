@@ -12,7 +12,7 @@ export default class WaitForNavigationAction extends Action {
   }
 
   async run() {
-    this.__context.logs.push(new ActionLog({ action: this.getName(), output: this.waitUntil }).now());
+    this.__context.logs.push(new ActionLog().fromAction(this).withOutput(this.waitUntil));
     await this.__context.page.waitForNavigation({ waitUntil: this.waitUntil });
   }
 }

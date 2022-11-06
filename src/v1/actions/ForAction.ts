@@ -23,46 +23,48 @@ export default class ForAction extends Action {
 
   async run() {
     let iterators: any[] = [];
-    if ((this._generator as Action).__isMeAction) {
+    let output = [];
+    const nestingLogs: ActionLog[] = [];
+    if ((this._generator as Action).__isAction) {
       iterators = await (this._generator as Action).withContext(this.__context).run();
-      this.__context.logs.push(new ActionLog({ action: this.getName(), output: iterators }).now());
+      output = iterators;
     } else if (Array.isArray(this._generator as any[])) {
       iterators = this._generator as any[];
-      this.__context.logs.push(new ActionLog({ action: this.getName(), output: iterators }).now());
+      output = iterators;
     } else {
       iterators = await (this._generator as ArrayGeneratorFunction)();
-      this.__context.logs.push(new ActionLog({ action: this.getName(), output: (iterators as ArrayGeneratorFunction[]).map((x) => x.name) }).now());
+      output = (iterators as ArrayGeneratorFunction[]).map((x) => String(x));
     }
     const eachs: (CreateActionFunction | Action)[] = Array.from((this._each as (CreateActionFunction | Action)[]));
+    let contextStepIdx = 0;
     for (const i of iterators) {
       // each loop create new context and run immediately
       const newContext = new Context({
-        jobName: this.__context.jobName,
+        job: this.__context.job,
         page: this.__context.page,
         libs: this.__context.libs,
         params: this.__context.params,
-        currentStepIdx: 0,
+        currentStepIdx: contextStepIdx,
         currentNestingLevel: this.__context.currentNestingLevel + 1,
         isBreak: false,
         stacks: [],
         logs: [],
-        outputs: [],
         runContext: this.__context.runContext,
-        _onDoing: this.__context._onDoing,
-        actionsToDestroy: [],
-      });
+      }).onDoing(this.__context.doing);
       for (const each of eachs) {
         // use .unshift will make stacks works like normal
-        if ((each as Action).__isMeAction) {
-          newContext.stacks.unshift((each as Action).withContext(newContext));
+        if ((each as Action).__isAction) {
+          newContext.stacks.unshift((each as Action));
         } else {
           const newAction = await (each as CreateActionFunction)(i);
-          newContext.stacks.unshift(newAction.withContext(newContext));
+          newContext.stacks.unshift(newAction);
         }
       }
       const logs = await this.__context.runContext(newContext);
-      this.__context.logs.push(new ActionLog({ action: this.getName(), output: logs }).now());
+      contextStepIdx = newContext.currentStepIdx;
+      nestingLogs.push(...logs);
     }
+    this.__context.logs.push(new ActionLog().fromAction(this).withOutput(output).nesting(nestingLogs));
     return iterators;
   }
 }
