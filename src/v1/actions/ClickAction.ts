@@ -15,6 +15,6 @@ export default class ClickAction extends Action {
 
   async run() {
     await this.__context.page.click(this.selector, this.opts);
-    this.__context.logs.push(new ActionLog({ action: this.getName() }).now());
+    this.__context.logs.push(new ActionLog().fromAction(this));
   }
 }

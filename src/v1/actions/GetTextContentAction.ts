@@ -11,7 +11,7 @@ export default class GetTextContentAction extends Action {
 
   async run() {
     const content = await this.__context.page.$eval(this.selector, (e: Element) => e.textContent);
-    this.__context.logs.push(new ActionLog({ action: this.getName(), output: content }).now());
+    this.__context.logs.push(new ActionLog().fromAction(this).withOutput(content));
     return content;
   }
 }

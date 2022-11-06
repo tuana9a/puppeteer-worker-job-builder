@@ -12,7 +12,7 @@ export default class GetValueFromParamsAction extends Action {
 
   async run() {
     const value = await this.getter(this.__context.params);
-    this.__context.logs.push(new ActionLog({ action: this.getName(), output: value }).now());
+    this.__context.logs.push(new ActionLog().fromAction(this).withOutput(value));
     return value;
   }
 }

@@ -17,11 +17,11 @@ export default class IsEqualAction extends Action {
 
     // eslint-disable-next-line eqeqeq
     if (got == this.value) {
-      this.__context.logs.push(new ActionLog({ action: this.getName(), output: true }).now());
+      this.__context.logs.push(new ActionLog().fromAction(this).withOutput(true));
       return true;
     }
 
-    this.__context.logs.push(new ActionLog({ action: this.getName(), output: false }).now());
+    this.__context.logs.push(new ActionLog().fromAction(this).withOutput(false));
     return false;
   }
 }

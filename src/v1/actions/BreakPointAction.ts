@@ -9,6 +9,6 @@ export default class BreakPointAction extends Action {
 
   async run() {
     this.__context.isBreak = true;
-    this.__context.logs.push(new ActionLog({ action: this.getName() }).now());
+    this.__context.logs.push(new ActionLog().fromAction(this));
   }
 }

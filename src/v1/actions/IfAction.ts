@@ -35,7 +35,7 @@ export default class IfAction extends Action {
 
   async run() {
     const output = await this._if.withContext(this.__context).run();
-    this.__context.logs.push(new ActionLog({ action: this.getName(), output: output }).now());
+    this.__context.logs.push(new ActionLog().fromAction(this).withOutput(output));
     if (output) {
       this.__context.stacks.push(...Array.from(this._then).reverse());
     } else {

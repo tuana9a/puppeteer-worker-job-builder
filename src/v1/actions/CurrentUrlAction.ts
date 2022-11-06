@@ -8,7 +8,7 @@ export default class CurrentUrlAction extends Action {
 
   async run() {
     const url = this.__context.page.url(); // page.url not return promise
-    this.__context.logs.push(new ActionLog({ action: this.getName(), output: url }).now());
+    this.__context.logs.push(new ActionLog().fromAction(this).withOutput(url));
     return url;
   }
 }

@@ -3,25 +3,25 @@ import ActionLog from "../ActionLog";
 import InvalidGetActionOutputOptsError from "../errors/InvalidGetActionOutputOptsError";
 import GetActionOutputOpts from "../types/GetActionOutputOpts";
 
-export default class GetActionOutputAction extends Action {
-  which: GetActionOutputOpts;
+export default class GetValueFromOutputAction extends Action {
+  opts: GetActionOutputOpts;
 
-  constructor(which: GetActionOutputOpts) {
-    super(GetActionOutputAction.name);
-    this.which = which;
+  constructor(opts: GetActionOutputOpts) {
+    super(GetValueFromOutputAction.name);
+    this.opts = opts;
   }
 
   async run() {
-    if (Number.isSafeInteger(this.which.direct)) {
-      const value = this.__context.outputs[this.which.direct];
-      this.__context.logs.push(new ActionLog({ action: this.getName(), output: value }).now());
+    if (Number.isSafeInteger(this.opts.direct)) {
+      const value = this.__context.logs[this.opts.direct].output;
+      this.__context.logs.push(new ActionLog().fromAction(this).withOutput(value));
       return value;
     }
-    if (Number.isSafeInteger(this.which.fromCurrent)) {
-      const value = this.__context.outputs[this.__context.currentStepIdx + this.which.fromCurrent];
-      this.__context.logs.push(new ActionLog({ action: this.getName(), output: value }).now());
+    if (Number.isSafeInteger(this.opts.fromCurrent)) {
+      const value = this.__context.logs[this.__context.currentStepIdx + this.opts.fromCurrent].output;
+      this.__context.logs.push(new ActionLog().fromAction(this).withOutput(value));
       return value;
     }
-    throw new InvalidGetActionOutputOptsError(this.which);
+    throw new InvalidGetActionOutputOptsError(this.opts);
   }
 }

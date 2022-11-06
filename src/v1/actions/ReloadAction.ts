@@ -7,7 +7,7 @@ export default class ReloadAction extends Action {
   }
 
   async run() {
-    this.__context.logs.push(new ActionLog({ action: this.getName() }).now());
+    this.__context.logs.push(new ActionLog().fromAction(this));
     await this.__context.page.reload();
   }
 }

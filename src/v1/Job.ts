@@ -5,11 +5,11 @@ export default class Job {
 
   actions: Action[];
 
-  __isMeJob: boolean;
+  __isJob: boolean;
 
   constructor({ name, actions }: Job) {
     this.name = name;
     this.actions = actions;
-    this.__isMeJob = true;
+    this.__isJob = true;
   }
 }
