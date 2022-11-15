@@ -63,6 +63,9 @@ export default class ForAction extends Action {
       const logs = await this.__context.runContext(newContext);
       contextStepIdx = newContext.currentStepIdx;
       nestingLogs.push(...logs);
+      if (newContext.isBreak) {
+        break;
+      }
     }
     this.__context.logs.push(new ActionLog().fromAction(this).withOutput(output).nesting(nestingLogs));
     return iterators;
