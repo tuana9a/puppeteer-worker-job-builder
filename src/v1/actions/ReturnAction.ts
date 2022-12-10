@@ -1,4 +1,5 @@
 import Action from "../Action";
+import ActionLog from "../ActionLog";
 
 export default class ReturnAction extends Action {
   constructor() {
@@ -6,8 +7,8 @@ export default class ReturnAction extends Action {
     this.withName(ReturnAction.name);
   }
 
-  async run(): Promise<any> {
-    // TODO:
-    return null;
+  async run() {
+    this.__context.isReturn = true;
+    this.__context.logs.push(new ActionLog().fromAction(this));
   }
 }

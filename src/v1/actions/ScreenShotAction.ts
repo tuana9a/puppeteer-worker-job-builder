@@ -6,17 +6,17 @@ export default class ScreenShotAction extends Action {
 
   saveTo: string;
 
-  imgType: string;
+  type: "png" | "jpeg" | "webp";
 
-  constructor(selector: string, saveTo: string, type: string) {
+  constructor(selector: string, saveTo: string, type: "png" | "jpeg" | "webp") {
     super(ScreenShotAction.name);
     this.selector = selector;
     this.saveTo = saveTo;
-    this.imgType = type;
+    this.type = type;
   }
 
   async run() {
-    const opts = { selector: this.selector, saveTo: this.saveTo, type: this.imgType };
+    const opts = { selector: this.selector, saveTo: this.saveTo, type: this.type };
     this.__context.logs.push(new ActionLog().fromAction(this).withOutput(opts));
 
     if (!opts.selector) {

@@ -99,7 +99,7 @@ export function GoTo(url: string) {
 }
 
 export function CurrentUrl() {
-  return new CurrentUrlAction().withName(`${CurrentUrlAction.name}`);
+  return new CurrentUrlAction().withName(`${CurrentUrl.name}`);
 }
 
 export function Reload() {
@@ -119,7 +119,7 @@ export function BringToFront() {
   return new BringToFrontAction().withName(`${BringToFront.name}`);
 }
 
-export function ScreenShot(selector: string, saveTo = "./tmp/temp.png", type = "png") {
+export function ScreenShot(selector: string, saveTo = "./tmp/temp.png", type: "png" | "jpeg" | "webp" = "png") {
   return new ScreenShotAction(selector, saveTo, type).withName(`${ScreenShot.name}: ${selector} > ${saveTo}`);
 }
 

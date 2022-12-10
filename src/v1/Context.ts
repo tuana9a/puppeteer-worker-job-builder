@@ -1,3 +1,5 @@
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { Page } from "puppeteer-core";
 import ActionLog from "./ActionLog";
 import Action from "./Action";
 import DoingInfo from "./DoingInfo";
@@ -6,7 +8,7 @@ import RunContextFunction from "./types/RunContextFunction";
 export default class Context {
   job: string;
 
-  page: any;
+  page: Page;
 
   libs: any;
 
@@ -17,6 +19,8 @@ export default class Context {
   currentNestingLevel: number;
 
   isBreak: boolean;
+
+  isReturn: boolean;
 
   stacks: Action[];
 
@@ -35,13 +39,14 @@ export default class Context {
     currentStepIdx,
     currentNestingLevel,
     isBreak,
+    isReturn,
     stacks,
     logs,
     runContext,
   }: {
     job: string;
 
-    page: any;
+    page: Page;
 
     libs: any;
 
@@ -52,6 +57,8 @@ export default class Context {
     currentNestingLevel: number;
 
     isBreak: boolean;
+
+    isReturn?: boolean;
 
     stacks: Action[];
 
@@ -66,6 +73,7 @@ export default class Context {
     this.currentStepIdx = currentStepIdx;
     this.currentNestingLevel = currentNestingLevel;
     this.isBreak = isBreak;
+    this.isReturn = isReturn;
     this.stacks = stacks;
     this.logs = logs;
     this.runContext = runContext;
