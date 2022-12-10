@@ -18,7 +18,7 @@ module.exports = {
   parserOptions: {
     ecmaVersion: "2021",
   },
-  ignorePatterns: ["node_modules/**/*"],
+  ignorePatterns: ["node_modules/**/*", "dist/**/*"],
   settings: {
     "import/resolver": {
       node: {
