@@ -106,6 +106,7 @@ export class ForAction extends Action {
         logs: [],
         runContext: this.__context.runContext,
         doing: this.__context.doing,
+        vars: this.__context.vars,
       });
       for (const run of eachRun) {
         // use .unshift will make stacks works like normal
