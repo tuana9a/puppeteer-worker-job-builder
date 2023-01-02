@@ -39,5 +39,6 @@ module.exports = {
     "no-unused-vars": "warn",
     "import/extensions": "off",
     "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/semi": ["error", "always"],
   },
 };
