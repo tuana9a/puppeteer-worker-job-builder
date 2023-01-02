@@ -1,8 +1,7 @@
-import { PuppeteerLifeCycleEvent } from "puppeteer-core";
 import { ClickAction, GoToAction, CurrentUrlAction, ReloadAction, WaitForTimeoutAction, BringToFrontAction, ScreenShotAction, WaitForNavigationAction, GetValueFromParamsAction, GetValueFromOutputAction, GetTextContentAction, TypeInAction, BreakPointAction, IfAction, ForAction, IsEqualAction, IsStrictEqualAction, PageEvalAction, SetVarsAction } from "./actions";
 import { Action } from "./core";
 import { RequiredParamError } from "./errors";
-import { ClickOpts, GetValueFromParamsFunction, GetActionOutputOpts, ArrayGeneratorFunction, SetVarsFunction } from "./types";
+import { PuppeteerLifeCycleEvent, ClickOpts, GetValueFromParamsFunction, GetActionOutputOpts, ArrayGeneratorFunction, SetVarsFunction } from "./types";
 
 export function Click(selector: string, opts: ClickOpts = { clickCount: 1 }) {
   if (!selector) throw new RequiredParamError("selector").withBuilderName(Click.name);

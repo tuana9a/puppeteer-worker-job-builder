@@ -1,14 +1,13 @@
 /* eslint-disable no-use-before-define */
 /* eslint-disable max-classes-per-file */
 
-import { Page } from "puppeteer-core";
 import { OnDoing, RunContextFunction } from "./types";
 import { nullify } from "./utils";
 
 export class Context {
   job: string;
 
-  page: Page;
+  page: any;
 
   libs: any;
 
@@ -53,7 +52,7 @@ export class Context {
   }: {
     job: string;
 
-    page: Page;
+    page: any;
 
     libs: any;
 
@@ -232,6 +231,10 @@ export class DoingInfo {
 
 export class Job {
   name: string;
+
+  params: any;
+
+  libs: any;
 
   actions: Action[];
 

@@ -1,8 +1,7 @@
 /* eslint-disable max-classes-per-file */
-import { PuppeteerLifeCycleEvent } from "puppeteer-core";
 import { Action, ActionLog, Context } from "./core";
 import { InvalidGetActionOutputOptsError, NotAnArrayOfActionsError } from "./errors";
-import { ClickOpts, ArrayGeneratorFunction, CreateActionFunction, GetActionOutputOpts, GetValueFromParamsFunction, SetVarsFunction } from "./types";
+import { PuppeteerLifeCycleEvent, ClickOpts, ArrayGeneratorFunction, CreateActionFunction, GetActionOutputOpts, GetValueFromParamsFunction, SetVarsFunction } from "./types";
 import { isValidArrayOfActions } from "./utils";
 
 export class BreakPointAction extends Action {
