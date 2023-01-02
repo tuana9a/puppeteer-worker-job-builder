@@ -91,6 +91,40 @@ export class Context {
     this.doing = doing || (() => null);
   }
 
+  newNested(currentStepIdx = 0) {
+    return new Context({
+      job: this.job,
+      page: this.page,
+      libs: this.libs,
+      params: this.params,
+      currentStepIdx: currentStepIdx,
+      currentNestingLevel: this.currentNestingLevel + 1, // nesting + 1
+      isBreak: false,
+      stacks: [],
+      logs: [],
+      runContext: this.runContext,
+      doing: this.doing,
+      vars: this.vars,
+    });
+  }
+
+  clone() {
+    return new Context({
+      job: this.job,
+      page: this.page,
+      libs: this.libs,
+      params: this.params,
+      currentStepIdx: this.currentStepIdx,
+      currentNestingLevel: this.currentNestingLevel,
+      isBreak: false,
+      stacks: [],
+      logs: [],
+      runContext: this.runContext,
+      doing: this.doing,
+      vars: this.vars,
+    });
+  }
+
   destroy() {
     let action = this.stacks.pop();
 

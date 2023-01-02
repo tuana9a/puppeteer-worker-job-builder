@@ -1,13 +1,12 @@
 /* eslint-disable max-classes-per-file */
-import { Action, ActionLog, Context } from "./core";
+import { Action, ActionLog } from "./core";
 import { InvalidGetActionOutputOptsError, NotAnArrayOfActionsError } from "./errors";
 import { PuppeteerLifeCycleEvent, ClickOpts, ArrayGeneratorFunction, CreateActionFunction, GetActionOutputOpts, GetValueFromParamsFunction, SetVarsFunction } from "./types";
 import { isValidArrayOfActions } from "./utils";
 
-export class BreakPointAction extends Action {
+export class _BreakPoint extends Action {
   constructor() {
-    super(BreakPointAction.name);
-    this.withName(BreakPointAction.name);
+    super(_BreakPoint.name);
   }
 
   async run() {
@@ -16,9 +15,9 @@ export class BreakPointAction extends Action {
   }
 }
 
-export class BringToFrontAction extends Action {
+export class _BringToFront extends Action {
   constructor() {
-    super(BringToFrontAction.name);
+    super(_BringToFront.name);
   }
 
   async run() {
@@ -28,13 +27,13 @@ export class BringToFrontAction extends Action {
   }
 }
 
-export class ClickAction extends Action {
+export class _Click extends Action {
   selector: string;
 
   opts?: ClickOpts;
 
   constructor(selector: string, opts: ClickOpts) {
-    super(ClickAction.name);
+    super(_Click.name);
     this.selector = selector;
     this.opts = opts;
   }
@@ -45,9 +44,9 @@ export class ClickAction extends Action {
   }
 }
 
-export class CurrentUrlAction extends Action {
+export class _CurrentUrl extends Action {
   constructor() {
-    super(CurrentUrlAction.name);
+    super(_CurrentUrl.name);
   }
 
   async run() {
@@ -57,13 +56,14 @@ export class CurrentUrlAction extends Action {
   }
 }
 
-export class ForAction extends Action {
+// TODO: 3 types of For
+export class _For extends Action {
   private generator: any[] | ArrayGeneratorFunction | Action;
 
   private eachRun: (CreateActionFunction | Action)[];
 
   constructor(generator: any[] | ArrayGeneratorFunction | Action) {
-    super(ForAction.name);
+    super(_For.name);
     this.generator = generator;
     this.eachRun = []; // IMPORTANT
   }
@@ -94,20 +94,7 @@ export class ForAction extends Action {
     // each loop create new context and run immediately
     // no previous stack is used
     for (const i of iterators) {
-      const newContext = new Context({
-        job: this.__context.job,
-        page: this.__context.page,
-        libs: this.__context.libs,
-        params: this.__context.params,
-        currentStepIdx: contextStepIdx,
-        currentNestingLevel: this.__context.currentNestingLevel + 1,
-        isBreak: false,
-        stacks: [],
-        logs: [],
-        runContext: this.__context.runContext,
-        doing: this.__context.doing,
-        vars: this.__context.vars,
-      });
+      const newContext = this.__context.newNested(contextStepIdx);
       for (const run of eachRun) {
         // use .unshift will make stacks works like normal
         if ((run as Action).__isAction) {
@@ -129,11 +116,11 @@ export class ForAction extends Action {
   }
 }
 
-export class GetValueFromOutputAction extends Action {
+export class _GetValueFromOutput extends Action {
   opts: GetActionOutputOpts;
 
   constructor(opts: GetActionOutputOpts) {
-    super(GetValueFromOutputAction.name);
+    super(_GetValueFromOutput.name);
     this.opts = opts;
   }
 
@@ -152,11 +139,11 @@ export class GetValueFromOutputAction extends Action {
   }
 }
 
-export class GetTextContentAction extends Action {
+export class _GetTextContent extends Action {
   selector: string;
 
   constructor(selector: string) {
-    super(GetTextContentAction.name);
+    super(_GetTextContent.name);
     this.selector = selector;
   }
 
@@ -167,11 +154,11 @@ export class GetTextContentAction extends Action {
   }
 }
 
-export class GetValueFromParamsAction extends Action {
+export class _GetValueFromParams extends Action {
   getter: GetValueFromParamsFunction;
 
   constructor(getter: GetValueFromParamsFunction) {
-    super(GetValueFromParamsAction.name);
+    super(_GetValueFromParams.name);
     this.getter = getter;
   }
 
@@ -182,11 +169,11 @@ export class GetValueFromParamsAction extends Action {
   }
 }
 
-export class GoToAction extends Action {
+export class _GoTo extends Action {
   url: string;
 
   constructor(url: string) {
-    super(GoToAction.name);
+    super(_GoTo.name);
     this.url = url;
   }
 
@@ -196,7 +183,7 @@ export class GoToAction extends Action {
   }
 }
 
-export class IfAction extends Action {
+export class _If extends Action {
   _if: Action;
 
   _then: Action[];
@@ -204,7 +191,7 @@ export class IfAction extends Action {
   _else: Action[];
 
   constructor(action: Action) {
-    super(IfAction.name);
+    super(_If.name);
     this._if = action;
     this._then = []; // IMPORTANT
     this._else = []; // IMPORTANT
@@ -238,13 +225,13 @@ export class IfAction extends Action {
   }
 }
 
-export class IsEqualAction extends Action {
+export class _IsEqual extends Action {
   getter: Action;
 
   value: any;
 
   constructor(getter: Action, value: any) {
-    super(IsEqualAction.name);
+    super(_IsEqual.name);
     this.getter = getter;
     this.value = value;
   }
@@ -263,13 +250,13 @@ export class IsEqualAction extends Action {
   }
 }
 
-export class IsStrictEqualAction extends Action {
+export class _IsStrictEqual extends Action {
   getter: Action;
 
   value: any;
 
   constructor(getter: Action, value: any) {
-    super(IsStrictEqualAction.name);
+    super(_IsStrictEqual.name);
     this.getter = getter;
     this.value = value;
   }
@@ -287,11 +274,11 @@ export class IsStrictEqualAction extends Action {
   }
 }
 
-export class PageEvalAction extends Action {
+export class _PageEval extends Action {
   handler: () => Promise<any>;
 
   constructor(handler: () => Promise<any>) {
-    super(PageEvalAction.name);
+    super(_PageEval.name);
     this.handler = handler;
   }
 
@@ -302,9 +289,9 @@ export class PageEvalAction extends Action {
   }
 }
 
-export class ReloadAction extends Action {
+export class _Reload extends Action {
   constructor() {
-    super(ReloadAction.name);
+    super(_Reload.name);
   }
 
   async run() {
@@ -313,10 +300,9 @@ export class ReloadAction extends Action {
   }
 }
 
-export class ReturnAction extends Action {
+export class _Return extends Action {
   constructor() {
-    super(ReturnAction.name);
-    this.withName(ReturnAction.name);
+    super(_Return.name);
   }
 
   async run() {
@@ -325,7 +311,7 @@ export class ReturnAction extends Action {
   }
 }
 
-export class ScreenShotAction extends Action {
+export class _ScreenShot extends Action {
   selector: string;
 
   saveTo: string;
@@ -333,7 +319,7 @@ export class ScreenShotAction extends Action {
   type: "png" | "jpeg" | "webp";
 
   constructor(selector: string, saveTo: string, type: "png" | "jpeg" | "webp") {
-    super(ScreenShotAction.name);
+    super(_ScreenShot.name);
     this.selector = selector;
     this.saveTo = saveTo;
     this.type = type;
@@ -354,26 +340,18 @@ export class ScreenShotAction extends Action {
   }
 }
 
-export class TypeInAction extends Action {
+export class _TypeIn extends Action {
   selector: string;
 
-  value: string | Action;
+  value: string;
 
-  constructor(selector: string, value: string | Action) {
-    super(TypeInAction.name);
+  constructor(selector: string, value: string) {
+    super(_TypeIn.name);
     this.selector = selector;
     this.value = value;
   }
 
   async run() {
-    if ((this.value as Action).__isAction) {
-      const output = await (this.value as Action).withContext(this.__context).withContext(this.__context).run();
-      const text = String(output);
-      await this.__context.page.type(this.selector, text);
-      this.__context.logs.push(new ActionLog().fromAction(this).withOutput(text));
-      return text;
-    }
-
     const text = String(this.value);
     await this.__context.page.type(this.selector, text);
     this.__context.logs.push(new ActionLog().fromAction(this).withOutput(text));
@@ -381,11 +359,31 @@ export class TypeInAction extends Action {
   }
 }
 
-export class WaitForNavigationAction extends Action {
+export class _TypeInActionOutputValue extends Action {
+  selector: string;
+
+  value: Action;
+
+  constructor(selector: string, value: Action) {
+    super(_TypeIn.name);
+    this.selector = selector;
+    this.value = value;
+  }
+
+  async run() {
+    const output = await this.value.withContext(this.__context).run();
+    const text = String(output);
+    await this.__context.page.type(this.selector, text);
+    this.__context.logs.push(new ActionLog().fromAction(this).withOutput(text));
+    return text;
+  }
+}
+
+export class _WaitForNavigation extends Action {
   waitUntil: PuppeteerLifeCycleEvent;
 
   constructor(waitUntil: PuppeteerLifeCycleEvent) {
-    super(WaitForNavigationAction.name);
+    super(_WaitForNavigation.name);
 
     this.waitUntil = waitUntil;
   }
@@ -396,11 +394,11 @@ export class WaitForNavigationAction extends Action {
   }
 }
 
-export class WaitForTimeoutAction extends Action {
+export class _WaitForTimeout extends Action {
   timeout: number;
 
   constructor(timeout: number) {
-    super(WaitForTimeoutAction.name);
+    super(_WaitForTimeout.name);
     this.timeout = timeout;
   }
 
@@ -410,11 +408,11 @@ export class WaitForTimeoutAction extends Action {
   }
 }
 
-export class SetVarsAction extends Action {
+export class _SetVars extends Action {
   handler: SetVarsFunction;
 
   constructor(handler: SetVarsFunction) {
-    super(SetVarsAction.name);
+    super(_SetVars.name);
     this.handler = handler;
   }
 
