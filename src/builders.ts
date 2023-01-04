@@ -1,4 +1,4 @@
-import { _Click, _GoTo, _CurrentUrl, _Reload, _WaitForTimeout, _BringToFront, _ScreenShot, _WaitForNavigation, _GetValueFromParams, _GetValueFromOutput, _GetTextContent, _TypeIn, _BreakPoint, _If, _For, _IsEqual, _IsStrictEqual, _PageEval, _SetVars, _TypeInActionOutputValue } from "./actions";
+import { _Click, _GoTo, _CurrentUrl, _Reload, _WaitForTimeout, _BringToFront, _ScreenShot, _WaitForNavigation, _GetValueFromParams, _GetValueFromOutput, _GetTextContent, _TypeIn, _Break, _If, _IsEqual, _IsStrictEqual, _PageEval, _SetVars, _TypeInActionOutputValue, _ForV2, _IsEqualActionOutput, _IsStrictEqualActionOutput, _IfActionOutput } from "./actions";
 import { Action } from "./core";
 import { RequiredParamError } from "./errors";
 import { PuppeteerLifeCycleEvent, ClickOpts, GetValueFromParamsFunction, GetActionOutputOpts, ArrayGeneratorFunction, SetVarsFunction } from "./types";
@@ -74,26 +74,42 @@ export function TypeIn(selector: string, value: string | Action) {
   return new _TypeIn(selector, value as string).withName(`${TypeIn.name}: ${selector}`);
 }
 
+/**
+ * @deprecated use Break() instead
+ */
 export function BreakPoint() {
-  return new _BreakPoint().withName(BreakPoint.name);
+  return new _Break().withName(BreakPoint.name);
 }
 
-export function If(IF: Action) {
-  return new _If(IF).withName(`${If.name}: ${IF.name}`);
+export function Break() {
+  return new _Break().withName(BreakPoint.name);
+}
+
+export function If(_if: Action | any) {
+  if ((_if as Action).__isAction) {
+    return new _IfActionOutput(_if).withName(`${If.name}: ${_if.name}`);
+  }
+  return new _If(_if).withName(`${If.name}: ${_if}`);
 }
 
 export function For(action: any[] | ArrayGeneratorFunction | Action) {
-  return new _For(action).withName(For.name);
+  return new _ForV2(action).withName(For.name);
 }
 
-export function IsEqual(getter: Action, value: any) {
-  if (!getter) throw new RequiredParamError("getter").withBuilderName(IsEqual.name);
-  return new _IsEqual(getter, value).withName(`${IsEqual.name}: ${getter.name} == ${value}`);
+export function IsEqual(value: Action | any, other: any) {
+  if (!value) throw new RequiredParamError("getter").withBuilderName(IsEqual.name);
+  if ((value as Action).__isAction) {
+    return new _IsEqualActionOutput(value, other).withName(`${IsEqual.name}: ${value.name} == ${other}`);
+  }
+  return new _IsEqual(value, other).withName(`${IsEqual.name}: ${value} == ${other}`);
 }
 
-export function IsStrictEqual(getter: Action, value: any) {
-  if (!getter) throw new RequiredParamError("getter").withBuilderName(IsEqual.name);
-  return new _IsStrictEqual(getter, value).withName(`${IsEqual.name}: ${getter.name} === ${value}`);
+export function IsStrictEqual(value: Action | any, other: any) {
+  if (!value) throw new RequiredParamError("getter").withBuilderName(IsEqual.name);
+  if ((value as Action).__isAction) {
+    return new _IsStrictEqualActionOutput(value, other).withName(`${IsStrictEqual.name}: ${value.name} === ${other}`);
+  }
+  return new _IsStrictEqual(value, other).withName(`${IsStrictEqual.name}: ${value} === ${other}`);
 }
 
 export function PageEval(handler: () => Promise<any>) {

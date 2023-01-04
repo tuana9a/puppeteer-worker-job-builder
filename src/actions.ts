@@ -4,13 +4,14 @@ import { InvalidGetActionOutputOptsError, NotAnArrayOfActionsError } from "./err
 import { PuppeteerLifeCycleEvent, ClickOpts, ArrayGeneratorFunction, CreateActionFunction, GetActionOutputOpts, GetValueFromParamsFunction, SetVarsFunction } from "./types";
 import { isValidArrayOfActions } from "./utils";
 
-export class _BreakPoint extends Action {
+export class _Break extends Action {
   constructor() {
-    super(_BreakPoint.name);
+    super(_Break.name);
   }
 
   async run() {
     this.__context.isBreak = true;
+    this.__context.stacks = []; // pop all actions left in this context
     this.__context.logs.push(new ActionLog().fromAction(this));
   }
 }
@@ -56,7 +57,9 @@ export class _CurrentUrl extends Action {
   }
 }
 
-// TODO: 3 types of For
+/**
+ * @deprecated use _ForV2 instead
+ */
 export class _For extends Action {
   private generator: any[] | ArrayGeneratorFunction | Action;
 
@@ -111,6 +114,104 @@ export class _For extends Action {
         break;
       }
     }
+    this.__context.logs.push(new ActionLog().fromAction(this).withOutput(output).nesting(nestingLogs));
+    return iterators;
+  }
+}
+
+export class _ForRunner extends Action {
+  private eachRun: (CreateActionFunction | Action)[];
+
+  private iterators: any[];
+
+  private currentIteratorIndex: number;
+
+  private currentContextStepIdx: number;
+
+  constructor({ iterators, eachRun, currentContextStepIdx, currentIteratorIndex }: {
+    eachRun: (CreateActionFunction | Action)[];
+
+    iterators: any[];
+
+    currentIteratorIndex: number;
+
+    currentContextStepIdx: number;
+  }) {
+    super(_ForRunner.name);
+    this.eachRun = eachRun;
+    this.iterators = iterators;
+    this.currentContextStepIdx = currentContextStepIdx;
+    this.currentIteratorIndex = currentIteratorIndex;
+  }
+
+  async run() {
+    const nestingLogs: ActionLog[] = [];
+    const eachRun: (CreateActionFunction | Action)[] = Array.from(this.eachRun as (CreateActionFunction | Action)[]);
+    // this implemetation is push a new ForRunner (like a loop)
+    const i = this.iterators[this.currentIteratorIndex];
+    const newContext = this.__context.newNested(this.currentContextStepIdx);
+    for (const run of eachRun) {
+      // use .unshift will make stacks works like normal
+      if ((run as Action).__isAction) {
+        newContext.stacks.unshift((run as Action));
+      } else {
+        const newAction = await (run as CreateActionFunction)(i);
+        newContext.stacks.unshift(newAction);
+      }
+    }
+    const logs = await this.__context.runContext(newContext);
+    nestingLogs.push(...logs);
+    if (!newContext.isBreak && this.currentIteratorIndex < this.iterators.length - 1) {
+      // push new ForRunner (loop simulation)
+      this.__context.stacks.push(new _ForRunner({
+        eachRun: this.eachRun,
+        iterators: this.iterators,
+        currentContextStepIdx: newContext.currentStepIdx,
+        currentIteratorIndex: this.currentIteratorIndex + 1
+      }));
+    }
+    this.__context.logs.push(new ActionLog().fromAction(this).withOutput({
+      iterators: this.iterators,
+      currentContextStepIdx: this.currentContextStepIdx,
+      currentIteratorIndex: this.currentIteratorIndex
+    }).nesting(nestingLogs));
+  }
+}
+
+// TODO: 3 types of For
+export class _ForV2 extends Action {
+  private generator: any[] | ArrayGeneratorFunction | Action;
+
+  private eachRun: (CreateActionFunction | Action)[];
+
+  constructor(generator: any[] | ArrayGeneratorFunction | Action) {
+    super(_ForV2.name);
+    this.generator = generator;
+    this.eachRun = []; // IMPORTANT
+  }
+
+  Each(actions: (CreateActionFunction | Action)[]) {
+    // each can be function or action mixed so can not check it
+    this.eachRun = actions;
+    return this;
+  }
+
+  async run() {
+    let iterators: any[] = [];
+    let output = [];
+    const nestingLogs: ActionLog[] = [];
+    if ((this.generator as Action).__isAction) {
+      iterators = await (this.generator as Action).withContext(this.__context).run();
+      output = iterators;
+    } else if (Array.isArray(this.generator as any[])) {
+      iterators = this.generator as any[];
+      output = iterators;
+    } else {
+      iterators = await (this.generator as ArrayGeneratorFunction)();
+      output = (iterators as ArrayGeneratorFunction[]).map((x) => String(x));
+    }
+    const eachRun: (CreateActionFunction | Action)[] = Array.from((this.eachRun as (CreateActionFunction | Action)[]));
+    this.__context.stacks.push(new _ForRunner({ eachRun: eachRun, iterators: iterators, currentContextStepIdx: 0, currentIteratorIndex: 0 }));
     this.__context.logs.push(new ActionLog().fromAction(this).withOutput(output).nesting(nestingLogs));
     return iterators;
   }
@@ -184,15 +285,57 @@ export class _GoTo extends Action {
 }
 
 export class _If extends Action {
+  _if: any;
+
+  _then: Action[];
+
+  _else: Action[];
+
+  constructor(_if: any) {
+    super(_If.name);
+    this._if = _if;
+    this._then = []; // IMPORTANT
+    this._else = []; // IMPORTANT
+  }
+
+  Then(actions: Action[]) {
+    this._then = actions;
+    if (!isValidArrayOfActions(actions)) {
+      throw new NotAnArrayOfActionsError(actions).withBuilderName(this.name);
+    }
+    return this;
+  }
+
+  Else(actions: Action[]) {
+    if (!isValidArrayOfActions(actions)) {
+      throw new NotAnArrayOfActionsError(actions).withBuilderName(this.name);
+    }
+    this._else = actions;
+    return this;
+  }
+
+  async run() {
+    const output = Boolean(this._if);
+    this.__context.logs.push(new ActionLog().fromAction(this).withOutput(output));
+    if (output) {
+      this.__context.stacks.push(...Array.from(this._then).reverse());
+    } else {
+      this.__context.stacks.push(...Array.from(this._else).reverse());
+    }
+    return output;
+  }
+}
+
+export class _IfActionOutput extends Action {
   _if: Action;
 
   _then: Action[];
 
   _else: Action[];
 
-  constructor(action: Action) {
-    super(_If.name);
-    this._if = action;
+  constructor(_if: Action) {
+    super(_IfActionOutput.name);
+    this._if = _if;
     this._then = []; // IMPORTANT
     this._else = []; // IMPORTANT
   }
@@ -226,6 +369,26 @@ export class _If extends Action {
 }
 
 export class _IsEqual extends Action {
+  value: any;
+
+  target: any;
+
+  constructor(value: any, other: any) {
+    super(_IsEqual.name);
+    this.value = value;
+    this.target = other;
+  }
+
+  async run() {
+    // eslint-disable-next-line eqeqeq
+    const output = this.value == this.target;
+
+    this.__context.logs.push(new ActionLog().fromAction(this).withOutput(output));
+    return output;
+  }
+}
+
+export class _IsEqualActionOutput extends Action {
   getter: Action;
 
   value: any;
@@ -240,23 +403,40 @@ export class _IsEqual extends Action {
     const got = await this.getter.withContext(this.__context).run();
 
     // eslint-disable-next-line eqeqeq
-    if (got == this.value) {
-      this.__context.logs.push(new ActionLog().fromAction(this).withOutput(true));
-      return true;
-    }
+    const output = got == this.value;
 
-    this.__context.logs.push(new ActionLog().fromAction(this).withOutput(false));
-    return false;
+    this.__context.logs.push(new ActionLog().fromAction(this).withOutput(output));
+    return output;
   }
 }
 
 export class _IsStrictEqual extends Action {
+  value: any;
+
+  other: any;
+
+  constructor(value: any, other: any) {
+    super(_IsStrictEqual.name);
+    this.value = value;
+    this.other = other;
+  }
+
+  async run() {
+
+    const output = this.value === this.other;
+
+    this.__context.logs.push(new ActionLog().fromAction(this).withOutput(output));
+    return output;
+  }
+}
+
+export class _IsStrictEqualActionOutput extends Action {
   getter: Action;
 
   value: any;
 
   constructor(getter: Action, value: any) {
-    super(_IsStrictEqual.name);
+    super(_IsStrictEqualActionOutput.name);
     this.getter = getter;
     this.value = value;
   }
@@ -264,13 +444,10 @@ export class _IsStrictEqual extends Action {
   async run() {
     const got = await this.getter.withContext(this.__context).run();
 
-    if (got === this.value) {
-      this.__context.logs.push(new ActionLog().fromAction(this).withOutput(true));
-      return true;
-    }
+    const output = got === this.value;
 
-    this.__context.logs.push(new ActionLog().fromAction(this).withOutput(false));
-    return false;
+    this.__context.logs.push(new ActionLog().fromAction(this).withOutput(output));
+    return output;
   }
 }
 
