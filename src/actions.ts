@@ -1,4 +1,5 @@
 /* eslint-disable max-classes-per-file */
+import * as _ from "lodash";
 import { Action, ActionLog } from "./core";
 import { InvalidGetActionOutputOptsError, NotAnArrayOfActionsError } from "./errors";
 import { PuppeteerLifeCycleEvent, ClickOpts, ArrayGeneratorFunction, CreateActionFunction, GetActionOutputOpts, GetValueFromParamsFunction, SetVarsFunction } from "./types";
@@ -595,6 +596,39 @@ export class _SetVars extends Action {
 
   async run() {
     await this.handler(this.__context.vars);
+    this.__context.logs.push(new ActionLog().fromAction(this).withOutput(this.__context.vars));
+  }
+}
+
+export class _SetVarsWithOutputAction extends Action {
+  path: string;
+  value: Action;
+
+  constructor(path: string, value: Action) {
+    super(_SetVarsWithOutputAction.name);
+    this.path = path;
+    this.value = value;
+  }
+
+  async run() {
+    const output = await this.value.withContext(this.__context).run();
+    _.set(this.__context.vars, this.path, output);
+    this.__context.logs.push(new ActionLog().fromAction(this).withOutput(this.__context.vars));
+  }
+}
+
+export class _SetVarsDirectValue extends Action {
+  path: string;
+  value: any;
+
+  constructor(path: string, value: any) {
+    super(_SetVarsDirectValue.name);
+    this.path = path;
+    this.value = value;
+  }
+
+  async run() {
+    _.set(this.__context.vars, this.path, this.value);
     this.__context.logs.push(new ActionLog().fromAction(this).withOutput(this.__context.vars));
   }
 }

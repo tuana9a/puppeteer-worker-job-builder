@@ -1,4 +1,4 @@
-import { _Click, _GoTo, _CurrentUrl, _Reload, _WaitForTimeout, _BringToFront, _ScreenShot, _WaitForNavigation, _GetValueFromParams, _GetValueFromOutput, _GetTextContent, _TypeIn, _Break, _If, _IsEqual, _IsStrictEqual, _PageEval, _SetVars, _TypeInActionOutputValue, _ForV2, _IsEqualActionOutput, _IsStrictEqualActionOutput, _IfActionOutput } from "./actions";
+import { _Click, _GoTo, _CurrentUrl, _Reload, _WaitForTimeout, _BringToFront, _ScreenShot, _WaitForNavigation, _GetValueFromParams, _GetValueFromOutput, _GetTextContent, _TypeIn, _Break, _If, _IsEqual, _IsStrictEqual, _PageEval, _SetVars, _TypeInActionOutputValue, _ForV2, _IsEqualActionOutput, _IsStrictEqualActionOutput, _IfActionOutput, _SetVarsWithOutputAction, _SetVarsDirectValue } from "./actions";
 import { Action } from "./core";
 import { RequiredParamError } from "./errors";
 import { PuppeteerLifeCycleEvent, ClickOpts, GetValueFromParamsFunction, GetActionOutputOpts, ArrayGeneratorFunction, SetVarsFunction } from "./types";
@@ -117,7 +117,13 @@ export function PageEval(handler: () => Promise<any>) {
   return new _PageEval(handler).withName(`${PageEval.name}: ${handler.name}`);
 }
 
-export function SetVars(handler: SetVarsFunction) {
+export function SetVars(handler: SetVarsFunction | string, value?: Action | any) {
   if (!handler) throw new RequiredParamError("handler").withBuilderName(SetVars.name);
-  return new _SetVars(handler).withName(`${SetVars.name}: ${handler.name}`);
+  if (typeof handler == "function") {
+    return new _SetVars(handler as SetVarsFunction).withName(`${SetVars.name}: ${handler.name}`);
+  }
+  if ((value as Action).__isAction) {
+    return new _SetVarsWithOutputAction(handler, value).withName(`${SetVars.name}: ${handler} ${value}`);
+  }
+  return new _SetVarsDirectValue(handler, value).withName(`${SetVars.name}: ${handler} ${value}`);
 }
